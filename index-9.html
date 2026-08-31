@@ -1,0 +1,1379 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>NFL Super Bowl Randomizer — Franchise Universe Edition</title>
+<style>
+:root{
+ --b:#07101c;--c:#111d31;--c2:#0b1627;--l:#29405f;--t:#f7f9ff;--m:#91a1bb;
+ --a:#65e5f4;--p:#8560ff;--g:#f4c85b;--ok:#42d89e;--bad:#ff7185;--blue:#4f87ff
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--b);color:var(--t);font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
+button,select{font:inherit}
+button{border:0;border-radius:9px;padding:8px 10px;background:#243957;color:#fff;font-weight:800;cursor:pointer}
+button:disabled{opacity:.4;cursor:not-allowed}
+.pri{background:linear-gradient(135deg,var(--p),#2964db)}
+.danger{background:#512333}
+.good{background:#174b3d}
+.app{max-width:880px;margin:auto;padding:9px 8px 36px}
+header{display:flex;justify-content:space-between;align-items:center;gap:6px;margin-bottom:7px}
+h1{font-size:19px;margin:0}
+.sub,.tiny{font-size:8px;color:var(--m)}
+.acts{display:flex;gap:4px}
+.card{background:var(--c);border:1px solid #1d2d47;border-radius:12px;padding:9px;margin-bottom:7px}
+.draw{display:grid;grid-template-columns:1fr auto;gap:6px;align-items:center}
+.era{font-size:9px;color:var(--a);font-weight:900;min-height:13px}
+.team{font-size:18px;font-weight:950;line-height:1.05;min-height:20px}
+.offline{font-size:7px;color:var(--ok);font-weight:900;margin-top:2px}
+.rollbox.rolling .era,.rollbox.rolling .team{animation:flicker .11s linear infinite}
+@keyframes flicker{0%{opacity:.35;transform:translateY(-1px)}50%{opacity:1;transform:translateY(1px)}100%{opacity:.5;transform:translateY(0)}}
+.row{display:flex;gap:5px;margin-top:6px}
+select{flex:1;background:#081321;color:white;border:1px solid var(--l);border-radius:8px;padding:7px}
+.bar{height:4px;background:#07101c;border-radius:99px;overflow:hidden;margin-top:6px}
+.bar div{height:100%;background:linear-gradient(90deg,var(--p),var(--a))}
+.head{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;gap:6px}
+.head b{font-size:12px}
+.pill{font-size:7px;background:#21324d;border-radius:99px;padding:3px 6px;white-space:nowrap}
+.players{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;max-height:300px;overflow:auto}
+.player{background:#081321;border:1px solid var(--l);border-radius:8px;padding:6px 7px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:4px;align-items:center}
+.player.sel{border-color:var(--a)}
+.player.used{opacity:.35}
+.nm{font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pm{font-size:7px;color:var(--m)}
+.imp{font-size:13px;font-weight:950;color:var(--g)}
+details{background:var(--c2);border:1px solid #1e304b;border-radius:9px;margin-top:5px}
+summary{padding:7px 8px;font-size:10px;font-weight:850;cursor:pointer}
+.inside{padding:0 7px 7px}
+.slots{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:3px}
+.slot{background:#07111f;border:1px solid var(--l);border-radius:7px;padding:5px;display:grid;grid-template-columns:38px 1fr auto;gap:3px;text-align:left}
+.slot.pick{border-color:var(--a)}
+.pos{font-size:8px;font-weight:950}
+.sn{font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.si{font-size:8px;color:var(--g);font-weight:900}
+.hist{font-size:8px;color:var(--m);line-height:1.5}
+.season{display:none}
+.season.show{display:block}
+.direction{background:#0a1424;border:1px solid var(--a);border-radius:10px;padding:8px;margin-bottom:7px;font-size:9px;line-height:1.45}
+.record{font-size:23px;font-weight:950;letter-spacing:-.04em}
+.phase{font-size:8px;color:var(--a);font-weight:900;text-transform:uppercase}
+.confbadge{display:inline-block;margin-top:3px;font-size:8px;font-weight:950;padding:4px 7px;border-radius:999px;border:1px solid var(--l);background:#172842}
+.confbadge.afc{color:#ff8a95;border-color:#6d3440;background:#2a1720}
+.confbadge.nfc{color:#75a7ff;border-color:#31538d;background:#14233d}
+.confnote{font-size:8px;color:var(--m);margin-top:3px}
+.schedule{display:grid;gap:4px;max-height:430px;overflow:auto}
+.game{display:grid;grid-template-columns:42px minmax(0,1fr) auto;gap:6px;align-items:center;background:#081321;border:1px solid var(--l);border-radius:8px;padding:7px}
+.game.current{border-color:var(--a);box-shadow:0 0 0 1px rgba(101,229,244,.18)}
+.week{font-size:8px;color:var(--m);font-weight:900}
+.opp{font-size:9px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.oppmeta{font-size:7px;color:var(--m);margin-top:1px}
+.result{font-size:10px;font-weight:950;text-align:right;white-space:nowrap}
+.win{color:var(--ok)}.loss{color:var(--bad)}.pending{color:var(--m)}
+.boxscore{grid-column:1/-1;margin-top:4px;border-top:1px solid #1c304a;padding-top:5px}
+.boxscore summary{font-size:8px;color:var(--a);font-weight:900;cursor:pointer;list-style:none}
+.boxscore summary::-webkit-details-marker{display:none}
+.boxscore summary:before{content:"▸ ";color:var(--g)}
+.boxscore[open] summary:before{content:"▾ "}
+.boxgrid{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:5px}
+.boxside{background:#06101d;border:1px solid #1b304c;border-radius:7px;padding:6px;min-width:0}
+.boxteam{font-size:8px;font-weight:950;color:var(--g);margin-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.statline{font-size:7px;line-height:1.45;color:#c7d3e6;margin-top:2px}
+.statline b{color:#fff}
+.statlabel{color:var(--m);font-weight:900}
+.seasonActions{display:grid;grid-template-columns:1fr 1fr;gap:5px;margin-top:7px}
+.summaryGrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px;margin:7px 0}
+.stat{background:#081321;border:1px solid var(--l);border-radius:8px;padding:7px;text-align:center}
+.stat b{display:block;font-size:14px}
+.stat span{font-size:7px;color:var(--m)}
+.playoffgame{background:#081321;border:1px solid var(--l);border-radius:8px;padding:8px;margin-top:5px}
+.champ{color:var(--ok);font-weight:950;font-size:17px}
+.lose{color:var(--bad);font-weight:950;font-size:14px}
+.bracketbox{background:#091524;border:1px solid var(--l);border-radius:10px;padding:8px;margin-top:8px}
+.brackettitle{font-size:10px;font-weight:950;color:var(--a);letter-spacing:.4px;margin-bottom:6px}
+.bracketround{margin-top:7px}
+.bracketroundtitle{font-size:7px;color:var(--m);font-weight:950;margin-bottom:3px;letter-spacing:.5px}
+.bracketmatch{background:#07101c;border:1px solid #1b304c;border-radius:7px;padding:4px 6px;margin-top:3px}
+.bracketteam{display:flex;justify-content:space-between;gap:7px;font-size:8px;padding:2px 0;color:#c8d4e8}
+.bracketteam.you{color:var(--a);font-weight:900}
+.bracketteam.advance{color:var(--ok)}
+.bracketbye{font-size:8px;padding:5px 6px;border:1px dashed #345272;border-radius:7px;color:var(--g);margin-bottom:4px}
+.pathlabel{font-size:8px;font-weight:950;color:var(--g);letter-spacing:.5px;margin-top:10px}
+
+.awardswrap{margin-top:8px}
+.awardswrap>summary{font-size:10px;color:var(--g);font-weight:950}
+.awardsintro{font-size:8px;color:var(--m);line-height:1.45;margin-bottom:6px}
+.awardgrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.awardcard{background:#07111f;border:1px solid var(--l);border-radius:8px;padding:7px;min-width:0}
+.awardtitle{font-size:8px;color:var(--a);font-weight:950;letter-spacing:.35px;text-transform:uppercase;margin-bottom:5px}
+.finalist{background:#0b1728;border:1px solid #1c304b;border-radius:7px;padding:5px 6px;margin-top:4px}
+.finalist.winner{border-color:var(--g);box-shadow:0 0 0 1px rgba(244,200,91,.15)}
+.finalist.you{border-color:var(--a)}
+.finalistname{font-size:9px;font-weight:950;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finalistmeta{font-size:7px;color:var(--m);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.finaliststats{font-size:7px;color:#c7d3e6;line-height:1.35;margin-top:3px}
+.awardtag{font-size:7px;font-weight:950;color:var(--g);float:right}
+.leadergrid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin-bottom:7px}
+.leader{background:#081321;border:1px solid #1d304b;border-radius:7px;padding:6px;min-width:0}
+.leader b{display:block;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.leader span{font-size:7px;color:var(--m)}
+.awardlock{background:#081321;border:1px dashed #345272;border-radius:8px;padding:8px;font-size:8px;color:var(--m);line-height:1.5}
+
+.leaguewrap{margin-top:8px}
+.leaguewrap>summary{font-size:10px;color:var(--a);font-weight:950}
+.leagueintro{font-size:8px;color:var(--m);line-height:1.45;margin-bottom:6px}
+.standgrid{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.standconf{background:#07111f;border:1px solid var(--l);border-radius:8px;padding:6px;min-width:0}
+.standtitle{font-size:8px;font-weight:950;color:var(--g);letter-spacing:.45px;margin-bottom:4px}
+.standhead,.standrow{display:grid;grid-template-columns:24px minmax(0,1fr) 30px 30px 34px;gap:3px;align-items:center}
+.standhead{font-size:6px;color:var(--m);font-weight:950;padding:2px 3px 4px;border-bottom:1px solid #1b304c}
+.standrow{font-size:7px;padding:4px 3px;border-bottom:1px solid #13263d}
+.standrow:last-child{border-bottom:0}
+.standrow.you{background:#10253a;color:var(--a);font-weight:950;border-radius:5px}
+.standrow.playoff .rank{color:var(--ok)}
+.standteam{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.standmeta{display:block;font-size:6px;color:var(--m);font-weight:500;margin-top:1px}
+.rank{font-weight:950}
+.leaderboards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:5px}
+.leaderboard{background:#07111f;border:1px solid var(--l);border-radius:8px;padding:6px;min-width:0}
+.leaderboardtitle{font-size:8px;color:var(--g);font-weight:950;letter-spacing:.35px;text-transform:uppercase;margin-bottom:4px}
+.leaguerow{display:grid;grid-template-columns:18px minmax(0,1fr) auto;gap:4px;align-items:center;padding:3px 0;border-bottom:1px solid #14263c;font-size:7px}
+.leaguerow:last-child{border-bottom:0}
+.leaguerow.you{color:var(--a);font-weight:900}
+.leaguerow .value{font-weight:950;color:#fff}
+.historycard{display:none}
+.historycard.show{display:block}
+.historysummary{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:7px}
+.historystat{background:#081321;border:1px solid var(--l);border-radius:8px;padding:7px;text-align:center}
+.historystat b{display:block;font-size:14px;color:var(--g)}
+.historystat span{font-size:7px;color:var(--m)}
+.recordbook{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin:6px 0}
+.recorditem{background:#07111f;border:1px solid #1d304b;border-radius:7px;padding:6px;min-width:0}
+.recorditem b{display:block;font-size:8px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.recorditem span{font-size:7px;color:var(--m)}
+.historyseason{background:#081321;border:1px solid var(--l);border-radius:8px;padding:7px;margin-top:5px}
+.historyseason.champion{border-color:var(--g)}
+.historytop{display:flex;justify-content:space-between;gap:6px;align-items:center}
+.historyfinish{font-size:9px;font-weight:950}
+.historymeta{font-size:7px;color:var(--m);margin-top:2px;line-height:1.4}
+.historyawards{font-size:7px;color:var(--g);margin-top:4px;line-height:1.35}
+@media(max-width:500px){
+ .players,.slots{grid-template-columns:1fr}
+ .seasonActions{grid-template-columns:1fr}
+ .game{grid-template-columns:38px minmax(0,1fr) auto}
+ .boxgrid,.awardgrid,.standgrid,.leaderboards{grid-template-columns:1fr}
+ .leadergrid{grid-template-columns:1fr 1fr}
+ .historysummary{grid-template-columns:1fr 1fr}
+ .recordbook{grid-template-columns:1fr}
+}
+</style>
+
+<meta name="theme-color" content="#07101c">
+</head>
+<body>
+<div class="app">
+<header>
+ <div><h1>🏈 Super Bowl Randomizer</h1><div class="sub">Franchise Universe • League Sim • Awards • History</div></div>
+ <div class="acts"><button id="shareApp">Share</button><button id="u">Undo</button><button class="danger" id="n">New</button></div>
+</header>
+
+<div class="card">
+ <div class="draw">
+  <div id="rollbox" class="rollbox">
+   <div class="era" id="e">READY</div>
+   <div class="team" id="t">Press Start</div>
+   <div class="offline">● STARTER DATABASE EMBEDDED</div>
+  </div>
+  <button class="pri" id="m">Start</button>
+ </div>
+ <div class="row"><select id="s"></select><button id="r">Reroll</button></div>
+ <div class="tiny" id="sel">No player selected.</div>
+ <div class="bar"><div id="b"></div></div>
+ <div class="tiny" id="ct">0 / 25 filled</div>
+</div>
+
+<div class="card" id="playerCard">
+ <div class="head"><b>Available Starters</b><span class="pill" id="pc">0</span></div>
+ <div class="tiny" style="margin:-1px 0 6px;line-height:1.45"><b style="color:var(--g)">Position-balanced team-era OVR:</b> 99 generational • 95–98 elite • 90–94 Pro Bowl • 85–89 strong starter • 80–84 solid/shorter impact • below 80 limited stint • out-of-position fits are reduced</div>
+  <div class="players" id="pl"><div class="tiny">Start a game.</div></div>
+</div>
+
+<details open id="rosterDetails">
+ <summary>Roster</summary>
+ <div class="inside">
+  <details><summary>Offense <span id="oc"></span></summary><div class="inside slots" id="off"></div></details>
+  <details><summary>Defense <span id="dc"></span></summary><div class="inside slots" id="def"></div></details>
+  <details><summary>Special Teams <span id="sc"></span></summary><div class="inside slots" id="st"></div></details>
+ </div>
+</details>
+
+<details><summary>Draft History</summary><div class="inside hist" id="h">No picks yet.</div></details>
+
+<div class="card season" id="seasonCard">
+ <div class="head">
+  <div>
+   <div class="phase" id="phase">SEASON MODE</div>
+   <div class="record" id="record">0-0</div>
+   <div id="conferenceBadge" class="confbadge" style="display:none"></div>
+   <div id="conferenceNote" class="confnote" style="display:none"></div>
+  </div>
+  <span class="pill" id="strengthPill">Team 0</span>
+ </div>
+
+ <div class="direction" id="direction">
+  Your roster is complete. Build your 17-game schedule to begin the season.
+ </div>
+
+ <div id="seasonSetup">
+  <button class="pri" id="buildSeason" style="width:100%">Build 17-Game Schedule</button>
+ </div>
+
+ <div id="seasonPlay" style="display:none">
+  <div class="summaryGrid">
+   <div class="stat"><b id="wins">0</b><span>WINS</span></div>
+   <div class="stat"><b id="losses">0</b><span>LOSSES</span></div>
+   <div class="stat"><b id="pfpa">0 / 0</b><span>PF / PA</span></div>
+  </div>
+  <div class="schedule" id="schedule"></div>
+  <div class="seasonActions" id="seasonActions">
+   <button class="pri" id="nextGame">Play Next Game</button>
+   <button id="fullSeason">Play Rest of Season</button>
+  </div>
+  <details class="leaguewrap" id="standingsDetails" open>
+   <summary>🌎 Full League Standings</summary>
+   <div class="inside" id="standingsArea"><div class="awardlock">League simulation begins when the schedule is built.</div></div>
+  </details>
+  <details class="leaguewrap" id="leagueLeadersDetails">
+   <summary>📊 League Statistical Leaders</summary>
+   <div class="inside" id="leagueLeadersArea"><div class="awardlock">League leaders update as your season advances.</div></div>
+  </details>
+  <details class="awardswrap" id="awardsDetails">
+   <summary>🏆 Season Leaders & League Awards</summary>
+   <div class="inside" id="awardsArea"><div class="awardlock">Play regular-season games to build award cases.</div></div>
+  </details>
+ </div>
+
+ <div id="postseason" style="display:none;margin-top:8px">
+  <div id="postSummary"></div>
+  <button class="pri" id="startPlayoffs" style="width:100%;margin-top:6px">Start Playoffs</button>
+  <div id="playoffArea"></div>
+ </div>
+</div>
+</div>
+
+<div class="card historycard" id="historyCard">
+ <div class="head"><div><div class="phase">FRANCHISE HISTORY</div><b>🏛️ Your Franchise Universe</b></div><span class="pill" id="historyCount">0 Seasons</span></div>
+ <div id="historyArea"></div>
+</div>
+
+<script>
+const D={"2020s|ARI":{"era":"2020s","team":"Arizona Cardinals","players":[{"name":"Kyler Murray","pos":"QB","impact":87},{"name":"James Conner","pos":"RB","impact":83},{"name":"DeAndre Hopkins","pos":"WR","impact":88},{"name":"Trey McBride","pos":"TE","impact":97},{"name":"Budda Baker","pos":"SS","impact":89},{"name":"Jalen Thompson","pos":"FS","impact":81},{"name":"Matt Prater","pos":"K","impact":83},{"name":"Paris Johnson Jr.","pos":"LT","impact":80},{"name":"Zaven Collins","pos":"LB","impact":78},{"name":"Will Hernandez","pos":"LG","impact":84},{"name":"Hjalte Froholdt","pos":"C","impact":83},{"name":"Leki Fotu","pos":"DT","impact":78},{"name":"Byron Murphy Jr.","pos":"CB","impact":86},{"name":"Andy Lee","pos":"P","impact":89}]},"2020s|ATL":{"era":"2020s","team":"Atlanta Falcons","players":[{"name":"Matt Ryan","pos":"QB","impact":87},{"name":"Kirk Cousins","pos":"QB","impact":84},{"name":"Bijan Robinson","pos":"RB","impact":97},{"name":"Drake London","pos":"WR","impact":86},{"name":"Kyle Pitts","pos":"TE","impact":82},{"name":"Chris Lindstrom","pos":"RG","impact":91},{"name":"Grady Jarrett","pos":"DT","impact":86},{"name":"A.J. Terrell","pos":"CB","impact":87},{"name":"Jessie Bates III","pos":"FS","impact":92},{"name":"Younghoe Koo","pos":"K","impact":89},{"name":"Jake Matthews","pos":"LT","impact":87},{"name":"Drew Dalman","pos":"C","impact":86},{"name":"Arnold Ebiketie","pos":"DE","impact":81},{"name":"Foyesade Oluokun","pos":"LB","impact":88},{"name":"Bradley Pinion","pos":"P","impact":89}]},"2020s|BAL":{"era":"2020s","team":"Baltimore Ravens","players":[{"name":"Lamar Jackson","pos":"QB","impact":99},{"name":"Derrick Henry","pos":"RB","impact":91},{"name":"Mark Andrews","pos":"TE","impact":91},{"name":"Zay Flowers","pos":"WR","impact":85},{"name":"Ronnie Stanley","pos":"LT","impact":86},{"name":"Roquan Smith","pos":"LB","impact":91},{"name":"Marlon Humphrey","pos":"CB","impact":87},{"name":"Kyle Hamilton","pos":"SS","impact":93},{"name":"Justin Tucker","pos":"K","impact":94},{"name":"Nnamdi Madubuike","pos":"DT","impact":86},{"name":"Ben Powers","pos":"LG","impact":86},{"name":"Tyler Linderbaum","pos":"C","impact":93},{"name":"Jordan Stout","pos":"P","impact":85}]},"2020s|BUF":{"era":"2020s","team":"Buffalo Bills","players":[{"name":"Josh Allen","pos":"QB","impact":99},{"name":"Stefon Diggs","pos":"WR","impact":90},{"name":"James Cook","pos":"RB","impact":88},{"name":"Dawson Knox","pos":"TE","impact":83},{"name":"Dion Dawkins","pos":"LT","impact":86},{"name":"Matt Milano","pos":"LB","impact":88},{"name":"Greg Rousseau","pos":"DE","impact":86},{"name":"Taron Johnson","pos":"CB","impact":87},{"name":"Micah Hyde","pos":"FS","impact":86},{"name":"Tyler Bass","pos":"K","impact":83},{"name":"David Edwards","pos":"LG","impact":84},{"name":"Mitch Morse","pos":"C","impact":89},{"name":"Ed Oliver","pos":"DT","impact":91},{"name":"Sam Martin","pos":"P","impact":85}]},"2020s|CAR":{"era":"2020s","team":"Carolina Panthers","players":[{"name":"Bryce Young","pos":"QB","impact":83},{"name":"Chuba Hubbard","pos":"RB","impact":85},{"name":"DJ Moore","pos":"WR","impact":87},{"name":"Adam Thielen","pos":"WR","impact":82},{"name":"Taylor Moton","pos":"RT","impact":86},{"name":"Derrick Brown","pos":"DT","impact":90},{"name":"Brian Burns","pos":"DE","impact":88},{"name":"Jaycee Horn","pos":"CB","impact":87},{"name":"Jeremy Chinn","pos":"SS","impact":81},{"name":"Eddy Pineiro","pos":"K","impact":81},{"name":"Tommy Tremble","pos":"TE","impact":81},{"name":"Brady Christensen","pos":"LG","impact":82},{"name":"Bradley Bozeman","pos":"C","impact":85},{"name":"Shaq Thompson","pos":"LB","impact":87},{"name":"Johnny Hekker","pos":"P","impact":94}]},"2020s|CHI":{"era":"2020s","team":"Chicago Bears","players":[{"name":"Justin Fields","pos":"QB","impact":85},{"name":"Caleb Williams","pos":"QB","impact":85},{"name":"D'Andre Swift","pos":"RB","impact":83},{"name":"DJ Moore","pos":"WR","impact":87},{"name":"Cole Kmet","pos":"TE","impact":83},{"name":"Teven Jenkins","pos":"LG","impact":81},{"name":"Montez Sweat","pos":"DE","impact":86},{"name":"Jaylon Johnson","pos":"CB","impact":92},{"name":"Tremaine Edmunds","pos":"LB","impact":83},{"name":"Cairo Santos","pos":"K","impact":85},{"name":"Braxton Jones","pos":"LT","impact":82},{"name":"Cody Whitehair","pos":"C","impact":85},{"name":"Andrew Billings","pos":"DT","impact":82},{"name":"Tory Taylor","pos":"P","impact":89},{"name":"Joe Thuney","pos":"LG","impact":96}]},"2020s|CIN":{"era":"2020s","team":"Cincinnati Bengals","players":[{"name":"Joe Burrow","pos":"QB","impact":94},{"name":"Joe Mixon","pos":"RB","impact":87},{"name":"Ja'Marr Chase","pos":"WR","impact":99},{"name":"Tee Higgins","pos":"WR","impact":87},{"name":"Orlando Brown Jr.","pos":"LT","impact":84},{"name":"Trey Hendrickson","pos":"DE","impact":90},{"name":"Logan Wilson","pos":"LB","impact":85},{"name":"Jessie Bates III","pos":"FS","impact":88},{"name":"Cam Taylor-Britt","pos":"CB","impact":80},{"name":"Evan McPherson","pos":"K","impact":89},{"name":"Mike Gesicki","pos":"TE","impact":85},{"name":"Cordell Volson","pos":"LG","impact":81},{"name":"Ted Karras","pos":"C","impact":87},{"name":"D.J. Reader","pos":"DT","impact":90},{"name":"Kevin Huber","pos":"P","impact":87}]},"2020s|CLE":{"era":"2020s","team":"Cleveland Browns","players":[{"name":"Baker Mayfield","pos":"QB","impact":84},{"name":"Nick Chubb","pos":"RB","impact":93},{"name":"Amari Cooper","pos":"WR","impact":87},{"name":"David Njoku","pos":"TE","impact":88},{"name":"Joel Bitonio","pos":"LG","impact":93},{"name":"Myles Garrett","pos":"DE","impact":99},{"name":"Denzel Ward","pos":"CB","impact":90},{"name":"Jeremiah Owusu-Koramoah","pos":"LB","impact":87},{"name":"Grant Delpit","pos":"FS","impact":81},{"name":"Dustin Hopkins","pos":"K","impact":83},{"name":"Jedrick Wills Jr.","pos":"LT","impact":80},{"name":"Ethan Pocic","pos":"C","impact":87},{"name":"Dalvin Tomlinson","pos":"DT","impact":86},{"name":"Corey Bojorquez","pos":"P","impact":89}]},"2020s|DAL":{"era":"2020s","team":"Dallas Cowboys","players":[{"name":"Dak Prescott","pos":"QB","impact":91},{"name":"Ezekiel Elliott","pos":"RB","impact":85},{"name":"CeeDee Lamb","pos":"WR","impact":93},{"name":"Zack Martin","pos":"RG","impact":94},{"name":"Tyron Smith","pos":"LT","impact":88},{"name":"Micah Parsons","pos":"LB","impact":96},{"name":"DeMarcus Lawrence","pos":"DE","impact":86},{"name":"Trevon Diggs","pos":"CB","impact":87},{"name":"DaRon Bland","pos":"CB","impact":90},{"name":"Brandon Aubrey","pos":"K","impact":94},{"name":"Jake Ferguson","pos":"TE","impact":89},{"name":"Tyler Biadasz","pos":"C","impact":87},{"name":"Osa Odighizuwa","pos":"DT","impact":87},{"name":"Bryan Anger","pos":"P","impact":94}]},"2020s|DEN":{"era":"2020s","team":"Denver Broncos","players":[{"name":"Russell Wilson","pos":"QB","impact":80},{"name":"Bo Nix","pos":"QB","impact":86},{"name":"Courtland Sutton","pos":"WR","impact":85},{"name":"Javonte Williams","pos":"RB","impact":81},{"name":"Garett Bolles","pos":"LT","impact":86},{"name":"Pat Surtain II","pos":"CB","impact":99},{"name":"Justin Simmons","pos":"FS","impact":90},{"name":"Nik Bonitto","pos":"DE","impact":86},{"name":"Zach Allen","pos":"DT","impact":86},{"name":"Wil Lutz","pos":"K","impact":83},{"name":"Noah Fant","pos":"TE","impact":86},{"name":"Dalton Risner","pos":"LG","impact":86},{"name":"Lloyd Cushenberry III","pos":"C","impact":87},{"name":"Josey Jewell","pos":"LB","impact":86},{"name":"Riley Dixon","pos":"P","impact":87},{"name":"Quinn Meinerz","pos":"RG","impact":96}]},"2020s|DET":{"era":"2020s","team":"Detroit Lions","players":[{"name":"Jared Goff","pos":"QB","impact":91},{"name":"Jahmyr Gibbs","pos":"RB","impact":92},{"name":"Amon-Ra St. Brown","pos":"WR","impact":93},{"name":"Sam LaPorta","pos":"TE","impact":90},{"name":"Penei Sewell","pos":"RT","impact":98},{"name":"Frank Ragnow","pos":"C","impact":93},{"name":"Aidan Hutchinson","pos":"DE","impact":92},{"name":"Alim McNeill","pos":"DT","impact":85},{"name":"Kerby Joseph","pos":"FS","impact":88},{"name":"Jack Fox","pos":"P","impact":91},{"name":"Jonah Jackson","pos":"LG","impact":87},{"name":"Alex Anzalone","pos":"LB","impact":87},{"name":"Carlton Davis III","pos":"CB","impact":88},{"name":"Jake Bates","pos":"K","impact":89}]},"2020s|GB":{"era":"2020s","team":"Green Bay Packers","players":[{"name":"Aaron Rodgers","pos":"QB","impact":91},{"name":"Jordan Love","pos":"QB","impact":89},{"name":"Aaron Jones","pos":"RB","impact":88},{"name":"Josh Jacobs","pos":"RB","impact":88},{"name":"Davante Adams","pos":"WR","impact":91},{"name":"Christian Watson","pos":"WR","impact":80},{"name":"Elgton Jenkins","pos":"LG","impact":90},{"name":"Rashan Gary","pos":"DE","impact":86},{"name":"Jaire Alexander","pos":"CB","impact":90},{"name":"Keisean Nixon","pos":"KR","impact":88},{"name":"Robert Tonyan","pos":"TE","impact":86},{"name":"David Bakhtiari","pos":"LT","impact":91},{"name":"Josh Myers","pos":"C","impact":83},{"name":"Kenny Clark","pos":"DT","impact":91},{"name":"De'Vondre Campbell","pos":"LB","impact":89},{"name":"Mason Crosby","pos":"K","impact":91},{"name":"Pat O'Donnell","pos":"P","impact":85},{"name":"Micah Parsons","pos":"DE","impact":97}]},"2020s|HOU":{"era":"2020s","team":"Houston Texans","players":[{"name":"Deshaun Watson","pos":"QB","impact":87},{"name":"C.J. Stroud","pos":"QB","impact":91},{"name":"Joe Mixon","pos":"RB","impact":86},{"name":"Nico Collins","pos":"WR","impact":89},{"name":"Laremy Tunsil","pos":"LT","impact":90},{"name":"Will Anderson Jr.","pos":"DE","impact":97},{"name":"Danielle Hunter","pos":"DE","impact":88},{"name":"Derek Stingley Jr.","pos":"CB","impact":92},{"name":"Jalen Pitre","pos":"SS","impact":84},{"name":"Ka'imi Fairbairn","pos":"K","impact":88},{"name":"Dalton Schultz","pos":"TE","impact":89},{"name":"Kenyon Green","pos":"LG","impact":79},{"name":"Juice Scruggs","pos":"C","impact":80},{"name":"Maliek Collins","pos":"DT","impact":85},{"name":"Christian Kirksey","pos":"LB","impact":85},{"name":"Cameron Johnston","pos":"P","impact":89}]},"2020s|IND":{"era":"2020s","team":"Indianapolis Colts","players":[{"name":"Philip Rivers","pos":"QB","impact":85},{"name":"Anthony Richardson","pos":"QB","impact":84},{"name":"Jonathan Taylor","pos":"RB","impact":90},{"name":"Michael Pittman Jr.","pos":"WR","impact":86},{"name":"Quenton Nelson","pos":"LG","impact":94},{"name":"DeForest Buckner","pos":"DT","impact":90},{"name":"Shaquille Leonard","pos":"LB","impact":87},{"name":"Kenny Moore II","pos":"CB","impact":86},{"name":"Julian Blackmon","pos":"FS","impact":81},{"name":"Matt Gay","pos":"K","impact":83},{"name":"Mo Alie-Cox","pos":"TE","impact":83},{"name":"Bernhard Raimann","pos":"LT","impact":87},{"name":"Ryan Kelly","pos":"C","impact":91},{"name":"Rigoberto Sanchez","pos":"P","impact":90}]},"2020s|JAX":{"era":"2020s","team":"Jacksonville Jaguars","players":[{"name":"Trevor Lawrence","pos":"QB","impact":87},{"name":"Travis Etienne","pos":"RB","impact":85},{"name":"Christian Kirk","pos":"WR","impact":83},{"name":"Evan Engram","pos":"TE","impact":88},{"name":"Brandon Scherff","pos":"RG","impact":86},{"name":"Josh Hines-Allen","pos":"DE","impact":90},{"name":"Foyesade Oluokun","pos":"LB","impact":87},{"name":"Tyson Campbell","pos":"CB","impact":81},{"name":"Andre Cisco","pos":"FS","impact":82},{"name":"Logan Cooke","pos":"P","impact":89},{"name":"Cam Robinson","pos":"LT","impact":85},{"name":"Luke Fortner","pos":"C","impact":78},{"name":"DaVon Hamilton","pos":"DT","impact":82},{"name":"Riley Patterson","pos":"K","impact":84}]},"2020s|KC":{"era":"2020s","team":"Kansas City Chiefs","players":[{"name":"Patrick Mahomes","pos":"QB","impact":99},{"name":"Isiah Pacheco","pos":"RB","impact":86},{"name":"Travis Kelce","pos":"TE","impact":98},{"name":"Tyreek Hill","pos":"WR","impact":93},{"name":"Creed Humphrey","pos":"C","impact":97},{"name":"Chris Jones","pos":"DT","impact":96},{"name":"Trent McDuffie","pos":"CB","impact":92},{"name":"Nick Bolton","pos":"LB","impact":86},{"name":"Harrison Butker","pos":"K","impact":92},{"name":"Tommy Townsend","pos":"P","impact":89},{"name":"Orlando Brown Jr.","pos":"LT","impact":88},{"name":"Joe Thuney","pos":"LG","impact":94}]},"2020s|LV":{"era":"2020s","team":"Las Vegas Raiders","players":[{"name":"Derek Carr","pos":"QB","impact":87},{"name":"Josh Jacobs","pos":"RB","impact":90},{"name":"Davante Adams","pos":"WR","impact":90},{"name":"Maxx Crosby","pos":"DE","impact":95},{"name":"Kolton Miller","pos":"LT","impact":86},{"name":"Nate Hobbs","pos":"CB","impact":82},{"name":"Daniel Carlson","pos":"K","impact":92},{"name":"AJ Cole","pos":"P","impact":94},{"name":"Robert Spillane","pos":"LB","impact":83},{"name":"Tre'von Moehrig","pos":"FS","impact":82},{"name":"Darren Waller","pos":"TE","impact":93},{"name":"Richie Incognito","pos":"LG","impact":88},{"name":"Andre James","pos":"C","impact":85},{"name":"Bilal Nichols","pos":"DT","impact":82}]},"2020s|LAC":{"era":"2020s","team":"Los Angeles Chargers","players":[{"name":"Justin Herbert","pos":"QB","impact":92},{"name":"Austin Ekeler","pos":"RB","impact":88},{"name":"Keenan Allen","pos":"WR","impact":90},{"name":"Rashawn Slater","pos":"LT","impact":88},{"name":"Corey Linsley","pos":"C","impact":88},{"name":"Joey Bosa","pos":"DE","impact":86},{"name":"Khalil Mack","pos":"DE","impact":89},{"name":"Derwin James Jr.","pos":"SS","impact":90},{"name":"Asante Samuel Jr.","pos":"CB","impact":82},{"name":"Cameron Dicker","pos":"K","impact":89},{"name":"Gerald Everett","pos":"TE","impact":86},{"name":"Matt Feiler","pos":"LG","impact":83},{"name":"Sebastian Joseph-Day","pos":"DT","impact":84},{"name":"Kenneth Murray Jr.","pos":"LB","impact":82},{"name":"JK Scott","pos":"P","impact":90}]},"2020s|LAR":{"era":"2020s","team":"Los Angeles Rams","players":[{"name":"Matthew Stafford","pos":"QB","impact":99},{"name":"Kyren Williams","pos":"RB","impact":88},{"name":"Cooper Kupp","pos":"WR","impact":96},{"name":"Puka Nacua","pos":"WR","impact":98},{"name":"Andrew Whitworth","pos":"LT","impact":88},{"name":"Aaron Donald","pos":"DT","impact":99},{"name":"Jalen Ramsey","pos":"CB","impact":92},{"name":"Kobie Turner","pos":"DT","impact":85},{"name":"Matt Gay","pos":"K","impact":85},{"name":"Johnny Hekker","pos":"P","impact":89},{"name":"Tyler Higbee","pos":"TE","impact":89},{"name":"David Edwards","pos":"LG","impact":85},{"name":"Brian Allen","pos":"C","impact":86},{"name":"Leonard Floyd","pos":"DE","impact":89},{"name":"Ernest Jones","pos":"LB","impact":88}]},"2020s|MIA":{"era":"2020s","team":"Miami Dolphins","players":[{"name":"Tua Tagovailoa","pos":"QB","impact":91},{"name":"Raheem Mostert","pos":"RB","impact":85},{"name":"Tyreek Hill","pos":"WR","impact":96},{"name":"Jaylen Waddle","pos":"WR","impact":89},{"name":"Terron Armstead","pos":"LT","impact":88},{"name":"Christian Wilkins","pos":"DT","impact":86},{"name":"Jalen Ramsey","pos":"CB","impact":88},{"name":"Xavien Howard","pos":"CB","impact":87},{"name":"Jevon Holland","pos":"FS","impact":87},{"name":"Jason Sanders","pos":"K","impact":85},{"name":"Mike Gesicki","pos":"TE","impact":89},{"name":"Liam Eichenberg","pos":"LG","impact":80},{"name":"Connor Williams","pos":"C","impact":88},{"name":"Emmanuel Ogbah","pos":"DE","impact":86},{"name":"Jerome Baker","pos":"LB","impact":87},{"name":"Thomas Morstead","pos":"P","impact":91}]},"2020s|MIN":{"era":"2020s","team":"Minnesota Vikings","players":[{"name":"Kirk Cousins","pos":"QB","impact":90},{"name":"Sam Darnold","pos":"QB","impact":88},{"name":"Dalvin Cook","pos":"RB","impact":88},{"name":"Justin Jefferson","pos":"WR","impact":96},{"name":"T.J. Hockenson","pos":"TE","impact":89},{"name":"Christian Darrisaw","pos":"LT","impact":88},{"name":"Danielle Hunter","pos":"DE","impact":89},{"name":"Harrison Smith","pos":"SS","impact":89},{"name":"Brian O'Neill","pos":"RT","impact":87},{"name":"Greg Joseph","pos":"K","impact":80},{"name":"Ezra Cleveland","pos":"LG","impact":85},{"name":"Garrett Bradbury","pos":"C","impact":86},{"name":"Harrison Phillips","pos":"DT","impact":86},{"name":"Eric Kendricks","pos":"LB","impact":91},{"name":"Patrick Peterson","pos":"CB","impact":88},{"name":"Ryan Wright","pos":"P","impact":86}]},"2020s|NE":{"era":"2020s","team":"New England Patriots","players":[{"name":"Cam Newton","pos":"QB","impact":78},{"name":"Mac Jones","pos":"QB","impact":82},{"name":"Rhamondre Stevenson","pos":"RB","impact":84},{"name":"Jakobi Meyers","pos":"WR","impact":83},{"name":"David Andrews","pos":"C","impact":87},{"name":"Matthew Judon","pos":"DE","impact":88},{"name":"Christian Barmore","pos":"DT","impact":86},{"name":"Kyle Dugger","pos":"SS","impact":85},{"name":"Jonathan Jones","pos":"CB","impact":84},{"name":"Nick Folk","pos":"K","impact":89},{"name":"Hunter Henry","pos":"TE","impact":89},{"name":"Trent Brown","pos":"LT","impact":87},{"name":"Joe Thuney","pos":"LG","impact":91},{"name":"Ja'Whaun Bentley","pos":"LB","impact":86},{"name":"Jake Bailey","pos":"P","impact":90}]},"2020s|NO":{"era":"2020s","team":"New Orleans Saints","players":[{"name":"Drew Brees","pos":"QB","impact":87},{"name":"Derek Carr","pos":"QB","impact":85},{"name":"Alvin Kamara","pos":"RB","impact":90},{"name":"Michael Thomas","pos":"WR","impact":84},{"name":"Ryan Ramczyk","pos":"RT","impact":88},{"name":"Cameron Jordan","pos":"DE","impact":89},{"name":"Demario Davis","pos":"LB","impact":91},{"name":"Marshon Lattimore","pos":"CB","impact":87},{"name":"Tyrann Mathieu","pos":"FS","impact":87},{"name":"Wil Lutz","pos":"K","impact":85},{"name":"Juwan Johnson","pos":"TE","impact":84},{"name":"Andrus Peat","pos":"LG","impact":86},{"name":"Erik McCoy","pos":"C","impact":92},{"name":"David Onyemata","pos":"DT","impact":86},{"name":"Blake Gillikin","pos":"P","impact":87}]},"2020s|NYG":{"era":"2020s","team":"New York Giants","players":[{"name":"Daniel Jones","pos":"QB","impact":84},{"name":"Saquon Barkley","pos":"RB","impact":88},{"name":"Malik Nabers","pos":"WR","impact":86},{"name":"Andrew Thomas","pos":"LT","impact":88},{"name":"Dexter Lawrence","pos":"DT","impact":96},{"name":"Leonard Williams","pos":"DT","impact":85},{"name":"Xavier McKinney","pos":"FS","impact":87},{"name":"Adoree' Jackson","pos":"CB","impact":81},{"name":"Graham Gano","pos":"K","impact":88},{"name":"Jamie Gillan","pos":"P","impact":81},{"name":"Evan Engram","pos":"TE","impact":85},{"name":"Will Hernandez","pos":"LG","impact":82},{"name":"John Michael Schmitz","pos":"C","impact":81},{"name":"Azeez Ojulari","pos":"DE","impact":83},{"name":"Bobby Okereke","pos":"LB","impact":88}]},"2020s|NYJ":{"era":"2020s","team":"New York Jets","players":[{"name":"Aaron Rodgers","pos":"QB","impact":82},{"name":"Breece Hall","pos":"RB","impact":88},{"name":"Garrett Wilson","pos":"WR","impact":89},{"name":"Alijah Vera-Tucker","pos":"RG","impact":86},{"name":"Quinnen Williams","pos":"DT","impact":92},{"name":"Sauce Gardner","pos":"CB","impact":93},{"name":"C.J. Mosley","pos":"LB","impact":87},{"name":"D.J. Reed","pos":"CB","impact":86},{"name":"Greg Zuerlein","pos":"K","impact":83},{"name":"Thomas Morstead","pos":"P","impact":89},{"name":"Tyler Conklin","pos":"TE","impact":86},{"name":"Mekhi Becton","pos":"LT","impact":80},{"name":"Connor McGovern","pos":"C","impact":85}]},"2020s|PHI":{"era":"2020s","team":"Philadelphia Eagles","players":[{"name":"Jalen Hurts","pos":"QB","impact":92},{"name":"Saquon Barkley","pos":"RB","impact":94},{"name":"A.J. Brown","pos":"WR","impact":92},{"name":"DeVonta Smith","pos":"WR","impact":88},{"name":"Lane Johnson","pos":"RT","impact":96},{"name":"Jason Kelce","pos":"C","impact":99},{"name":"Haason Reddick","pos":"DE","impact":88},{"name":"Darius Slay","pos":"CB","impact":88},{"name":"Jalen Carter","pos":"DT","impact":88},{"name":"Jake Elliott","pos":"K","impact":92},{"name":"Dallas Goedert","pos":"TE","impact":92},{"name":"Landon Dickerson","pos":"LG","impact":94},{"name":"T.J. Edwards","pos":"LB","impact":88},{"name":"Braden Mann","pos":"P","impact":86}]},"2020s|PIT":{"era":"2020s","team":"Pittsburgh Steelers","players":[{"name":"Ben Roethlisberger","pos":"QB","impact":84},{"name":"Kenny Pickett","pos":"QB","impact":81},{"name":"Najee Harris","pos":"RB","impact":83},{"name":"George Pickens","pos":"WR","impact":86},{"name":"T.J. Watt","pos":"DE","impact":99},{"name":"Cameron Heyward","pos":"DT","impact":92},{"name":"Minkah Fitzpatrick","pos":"FS","impact":92},{"name":"Alex Highsmith","pos":"DE","impact":86},{"name":"Chris Boswell","pos":"K","impact":93},{"name":"Pressley Harvin III","pos":"P","impact":77},{"name":"Pat Freiermuth","pos":"TE","impact":89},{"name":"Dan Moore Jr.","pos":"LT","impact":80},{"name":"Isaac Seumalo","pos":"LG","impact":88},{"name":"Mason Cole","pos":"C","impact":81},{"name":"Devin Bush","pos":"LB","impact":79},{"name":"Joe Haden","pos":"CB","impact":88}]},"2020s|SF":{"era":"2020s","team":"San Francisco 49ers","players":[{"name":"Brock Purdy","pos":"QB","impact":91},{"name":"Christian McCaffrey","pos":"RB","impact":96},{"name":"Deebo Samuel","pos":"WR","impact":90},{"name":"Brandon Aiyuk","pos":"WR","impact":89},{"name":"George Kittle","pos":"TE","impact":96},{"name":"Trent Williams","pos":"LT","impact":99},{"name":"Nick Bosa","pos":"DE","impact":95},{"name":"Fred Warner","pos":"LB","impact":96},{"name":"Charvarius Ward","pos":"CB","impact":87},{"name":"Jake Moody","pos":"K","impact":83},{"name":"Laken Tomlinson","pos":"LG","impact":90},{"name":"Jake Brendel","pos":"C","impact":87},{"name":"Javon Kinlaw","pos":"DT","impact":80},{"name":"Mitch Wishnowsky","pos":"P","impact":89}]},"2020s|SEA":{"era":"2020s","team":"Seattle Seahawks","players":[{"name":"Russell Wilson","pos":"QB","impact":88},{"name":"Geno Smith","pos":"QB","impact":89},{"name":"Kenneth Walker III","pos":"RB","impact":86},{"name":"DK Metcalf","pos":"WR","impact":89},{"name":"Tyler Lockett","pos":"WR","impact":87},{"name":"Charles Cross","pos":"LT","impact":81},{"name":"Bobby Wagner","pos":"LB","impact":92},{"name":"Jamal Adams","pos":"SS","impact":82},{"name":"Devon Witherspoon","pos":"CB","impact":87},{"name":"Jason Myers","pos":"K","impact":85},{"name":"Noah Fant","pos":"TE","impact":86},{"name":"Damien Lewis","pos":"LG","impact":87},{"name":"Ethan Pocic","pos":"C","impact":82},{"name":"Poona Ford","pos":"DT","impact":85},{"name":"Michael Dickson","pos":"P","impact":96},{"name":"Jaxon Smith-Njigba","pos":"WR","impact":98}]},"2020s|TB":{"era":"2020s","team":"Tampa Bay Buccaneers","players":[{"name":"Tom Brady","pos":"QB","impact":95},{"name":"Baker Mayfield","pos":"QB","impact":90},{"name":"Mike Evans","pos":"WR","impact":93},{"name":"Chris Godwin","pos":"WR","impact":89},{"name":"Tristan Wirfs","pos":"LT","impact":96},{"name":"Vita Vea","pos":"DT","impact":88},{"name":"Lavonte David","pos":"LB","impact":92},{"name":"Antoine Winfield Jr.","pos":"FS","impact":93},{"name":"Shaq Barrett","pos":"DE","impact":87},{"name":"Chase McLaughlin","pos":"K","impact":84},{"name":"Leonard Fournette","pos":"RB","impact":88},{"name":"Rob Gronkowski","pos":"TE","impact":96},{"name":"Ali Marpet","pos":"LG","impact":94},{"name":"Ryan Jensen","pos":"C","impact":92},{"name":"Carlton Davis III","pos":"CB","impact":88},{"name":"Jake Camarda","pos":"P","impact":89}]},"2020s|TEN":{"era":"2020s","team":"Tennessee Titans","players":[{"name":"Ryan Tannehill","pos":"QB","impact":87},{"name":"Derrick Henry","pos":"RB","impact":96},{"name":"A.J. Brown","pos":"WR","impact":88},{"name":"DeAndre Hopkins","pos":"WR","impact":83},{"name":"Jeffery Simmons","pos":"DT","impact":91},{"name":"Harold Landry III","pos":"DE","impact":84},{"name":"Kevin Byard","pos":"FS","impact":89},{"name":"Denico Autry","pos":"DE","impact":84},{"name":"Nick Folk","pos":"K","impact":89},{"name":"Ryan Stonehouse","pos":"P","impact":92},{"name":"Chig Okonkwo","pos":"TE","impact":84},{"name":"Taylor Lewan","pos":"LT","impact":87},{"name":"Rodger Saffold","pos":"LG","impact":90},{"name":"Ben Jones","pos":"C","impact":88},{"name":"Rashaan Evans","pos":"LB","impact":82},{"name":"Kristian Fulton","pos":"CB","impact":84}]},"2020s|WAS":{"era":"2020s","team":"Washington Commanders","players":[{"name":"Alex Smith","pos":"QB","impact":80},{"name":"Taylor Heinicke","pos":"QB","impact":84},{"name":"Brian Robinson Jr.","pos":"RB","impact":83},{"name":"Terry McLaurin","pos":"WR","impact":89},{"name":"Brandon Scherff","pos":"RG","impact":87},{"name":"Chase Young","pos":"DE","impact":81},{"name":"Jonathan Allen","pos":"DT","impact":87},{"name":"Daron Payne","pos":"DT","impact":86},{"name":"Kamren Curl","pos":"SS","impact":84},{"name":"Tress Way","pos":"P","impact":92},{"name":"Logan Thomas","pos":"TE","impact":88},{"name":"Charles Leno Jr.","pos":"LT","impact":86},{"name":"Chase Roullier","pos":"C","impact":87},{"name":"Cole Holcomb","pos":"LB","impact":85},{"name":"Kendall Fuller","pos":"CB","impact":90},{"name":"Joey Slye","pos":"K","impact":85}]},"2010s|ARI":{"era":"2010s","team":"Arizona Cardinals","players":[{"name":"Carson Palmer","pos":"QB","impact":90},{"name":"David Johnson","pos":"RB","impact":88},{"name":"Larry Fitzgerald","pos":"WR","impact":93},{"name":"Calais Campbell","pos":"DE","impact":90},{"name":"Patrick Peterson","pos":"CB","impact":93},{"name":"Tyrann Mathieu","pos":"FS","impact":88},{"name":"Chandler Jones","pos":"DE","impact":89},{"name":"Darnell Dockett","pos":"DT","impact":82},{"name":"Justin Bethel","pos":"CB","impact":81},{"name":"Jay Feely","pos":"K","impact":83},{"name":"Jermaine Gresham","pos":"TE","impact":84},{"name":"Jared Veldheer","pos":"LT","impact":88},{"name":"Mike Iupati","pos":"LG","impact":92},{"name":"Lyle Sendlein","pos":"C","impact":86},{"name":"Kevin Minter","pos":"LB","impact":83},{"name":"Drew Butler","pos":"P","impact":80}]},"2010s|ATL":{"era":"2010s","team":"Atlanta Falcons","players":[{"name":"Matt Ryan","pos":"QB","impact":94},{"name":"Devonta Freeman","pos":"RB","impact":88},{"name":"Julio Jones","pos":"WR","impact":96},{"name":"Roddy White","pos":"WR","impact":87},{"name":"Tony Gonzalez","pos":"TE","impact":91},{"name":"Alex Mack","pos":"C","impact":91},{"name":"Grady Jarrett","pos":"DT","impact":86},{"name":"Desmond Trufant","pos":"CB","impact":86},{"name":"Matt Bryant","pos":"K","impact":92},{"name":"Matt Bosher","pos":"P","impact":85},{"name":"Jake Matthews","pos":"LT","impact":88},{"name":"Andy Levitre","pos":"LG","impact":87},{"name":"Vic Beasley","pos":"DE","impact":90},{"name":"Deion Jones","pos":"LB","impact":91}]},"2010s|BAL":{"era":"2010s","team":"Baltimore Ravens","players":[{"name":"Joe Flacco","pos":"QB","impact":89},{"name":"Ray Rice","pos":"RB","impact":88},{"name":"Justin Forsett","pos":"RB","impact":84},{"name":"Anquan Boldin","pos":"WR","impact":87},{"name":"Marshal Yanda","pos":"RG","impact":94},{"name":"Terrell Suggs","pos":"DE","impact":92},{"name":"Haloti Ngata","pos":"DT","impact":88},{"name":"C.J. Mosley","pos":"LB","impact":87},{"name":"Eric Weddle","pos":"FS","impact":88},{"name":"Justin Tucker","pos":"K","impact":99},{"name":"Dennis Pitta","pos":"TE","impact":89},{"name":"Ronnie Stanley","pos":"LT","impact":91},{"name":"Matt Birk","pos":"C","impact":89},{"name":"Jimmy Smith","pos":"CB","impact":90},{"name":"Sam Koch","pos":"P","impact":96}]},"2010s|BUF":{"era":"2010s","team":"Buffalo Bills","players":[{"name":"Ryan Fitzpatrick","pos":"QB","impact":84},{"name":"LeSean McCoy","pos":"RB","impact":89},{"name":"Fred Jackson","pos":"RB","impact":86},{"name":"Stevie Johnson","pos":"WR","impact":84},{"name":"Eric Wood","pos":"C","impact":87},{"name":"Kyle Williams","pos":"DT","impact":90},{"name":"Marcell Dareus","pos":"DT","impact":86},{"name":"Tre'Davious White","pos":"CB","impact":90},{"name":"Micah Hyde","pos":"FS","impact":87},{"name":"Stephen Hauschka","pos":"K","impact":85},{"name":"Charles Clay","pos":"TE","impact":86},{"name":"Cordy Glenn","pos":"LT","impact":87},{"name":"Richie Incognito","pos":"LG","impact":92},{"name":"Jerry Hughes","pos":"DE","impact":88},{"name":"Preston Brown","pos":"LB","impact":85},{"name":"Colton Schmidt","pos":"P","impact":84}]},"2010s|CAR":{"era":"2010s","team":"Carolina Panthers","players":[{"name":"Cam Newton","pos":"QB","impact":95},{"name":"Christian McCaffrey","pos":"RB","impact":92},{"name":"Jonathan Stewart","pos":"RB","impact":86},{"name":"Steve Smith Sr.","pos":"WR","impact":87},{"name":"Greg Olsen","pos":"TE","impact":92},{"name":"Ryan Kalil","pos":"C","impact":91},{"name":"Luke Kuechly","pos":"LB","impact":99},{"name":"Thomas Davis","pos":"LB","impact":90},{"name":"Josh Norman","pos":"CB","impact":90},{"name":"Graham Gano","pos":"K","impact":88},{"name":"Jordan Gross","pos":"LT","impact":92},{"name":"Andrew Norwell","pos":"LG","impact":94},{"name":"Kawann Short","pos":"DT","impact":93},{"name":"Brad Nortman","pos":"P","impact":85}]},"2010s|CHI":{"era":"2010s","team":"Chicago Bears","players":[{"name":"Jay Cutler","pos":"QB","impact":87},{"name":"Matt Forte","pos":"RB","impact":92},{"name":"Brandon Marshall","pos":"WR","impact":89},{"name":"Alshon Jeffery","pos":"WR","impact":87},{"name":"Kyle Long","pos":"RG","impact":87},{"name":"Julius Peppers","pos":"DE","impact":90},{"name":"Khalil Mack","pos":"DE","impact":93},{"name":"Lance Briggs","pos":"LB","impact":87},{"name":"Charles Tillman","pos":"CB","impact":90},{"name":"Robbie Gould","pos":"K","impact":92},{"name":"Martellus Bennett","pos":"TE","impact":90},{"name":"Jermon Bushrod","pos":"LT","impact":86},{"name":"Roberto Garza","pos":"C","impact":87},{"name":"Akiem Hicks","pos":"DT","impact":93},{"name":"Pat O'Donnell","pos":"P","impact":86}]},"2010s|CIN":{"era":"2010s","team":"Cincinnati Bengals","players":[{"name":"Andy Dalton","pos":"QB","impact":88},{"name":"Giovani Bernard","pos":"RB","impact":83},{"name":"A.J. Green","pos":"WR","impact":92},{"name":"Andrew Whitworth","pos":"LT","impact":92},{"name":"Geno Atkins","pos":"DT","impact":93},{"name":"Carlos Dunlap","pos":"DE","impact":87},{"name":"Vontaze Burfict","pos":"LB","impact":83},{"name":"Leon Hall","pos":"CB","impact":85},{"name":"Reggie Nelson","pos":"FS","impact":85},{"name":"Mike Nugent","pos":"K","impact":83},{"name":"Tyler Eifert","pos":"TE","impact":91},{"name":"Clint Boling","pos":"LG","impact":88},{"name":"Russell Bodine","pos":"C","impact":82},{"name":"Kevin Huber","pos":"P","impact":92}]},"2010s|CLE":{"era":"2010s","team":"Cleveland Browns","players":[{"name":"Baker Mayfield","pos":"QB","impact":85},{"name":"Nick Chubb","pos":"RB","impact":90},{"name":"Josh Gordon","pos":"WR","impact":89},{"name":"Joe Thomas","pos":"LT","impact":96},{"name":"Joel Bitonio","pos":"LG","impact":90},{"name":"Myles Garrett","pos":"DE","impact":90},{"name":"Joe Haden","pos":"CB","impact":88},{"name":"D'Qwell Jackson","pos":"LB","impact":83},{"name":"Phil Dawson","pos":"K","impact":89},{"name":"Andy Lee","pos":"P","impact":89},{"name":"Jordan Cameron","pos":"TE","impact":91},{"name":"Alex Mack","pos":"C","impact":96},{"name":"Danny Shelton","pos":"DT","impact":85}]},"2010s|DAL":{"era":"2010s","team":"Dallas Cowboys","players":[{"name":"Tony Romo","pos":"QB","impact":91},{"name":"Dak Prescott","pos":"QB","impact":89},{"name":"DeMarco Murray","pos":"RB","impact":91},{"name":"Ezekiel Elliott","pos":"RB","impact":93},{"name":"Dez Bryant","pos":"WR","impact":90},{"name":"Jason Witten","pos":"TE","impact":93},{"name":"Tyron Smith","pos":"LT","impact":93},{"name":"Zack Martin","pos":"RG","impact":96},{"name":"DeMarcus Ware","pos":"DE","impact":92},{"name":"Dan Bailey","pos":"K","impact":92},{"name":"Travis Frederick","pos":"C","impact":96},{"name":"Maliek Collins","pos":"DT","impact":85},{"name":"Sean Lee","pos":"LB","impact":92},{"name":"Brandon Carr","pos":"CB","impact":88},{"name":"Barry Church","pos":"SS","impact":87},{"name":"Chris Jones","pos":"P","impact":89}]},"2010s|DEN":{"era":"2010s","team":"Denver Broncos","players":[{"name":"Peyton Manning","pos":"QB","impact":95},{"name":"C.J. Anderson","pos":"RB","impact":86},{"name":"Demaryius Thomas","pos":"WR","impact":91},{"name":"Emmanuel Sanders","pos":"WR","impact":87},{"name":"Ryan Clady","pos":"LT","impact":88},{"name":"Von Miller","pos":"DE","impact":99},{"name":"Chris Harris Jr.","pos":"CB","impact":93},{"name":"Aqib Talib","pos":"CB","impact":91},{"name":"T.J. Ward","pos":"SS","impact":87},{"name":"Brandon McManus","pos":"K","impact":89},{"name":"Julius Thomas","pos":"TE","impact":92},{"name":"Zane Beadles","pos":"LG","impact":90},{"name":"Matt Paradis","pos":"C","impact":92},{"name":"Sylvester Williams","pos":"DT","impact":82},{"name":"Danny Trevathan","pos":"LB","impact":90},{"name":"Britton Colquitt","pos":"P","impact":90}]},"2010s|DET":{"era":"2010s","team":"Detroit Lions","players":[{"name":"Matthew Stafford","pos":"QB","impact":91},{"name":"Reggie Bush","pos":"RB","impact":84},{"name":"Calvin Johnson","pos":"WR","impact":99},{"name":"Golden Tate","pos":"WR","impact":87},{"name":"Ndamukong Suh","pos":"DT","impact":92},{"name":"Ezekiel Ansah","pos":"DE","impact":84},{"name":"Darius Slay","pos":"CB","impact":91},{"name":"DeAndre Levy","pos":"LB","impact":87},{"name":"Matt Prater","pos":"K","impact":92},{"name":"Sam Martin","pos":"P","impact":87},{"name":"Brandon Pettigrew","pos":"TE","impact":86},{"name":"Riley Reiff","pos":"LT","impact":87},{"name":"Rob Sims","pos":"LG","impact":87},{"name":"Dominic Raiola","pos":"C","impact":87}]},"2010s|GB":{"era":"2010s","team":"Green Bay Packers","players":[{"name":"Aaron Rodgers","pos":"QB","impact":99},{"name":"Eddie Lacy","pos":"RB","impact":87},{"name":"Jordy Nelson","pos":"WR","impact":90},{"name":"Davante Adams","pos":"WR","impact":89},{"name":"Randall Cobb","pos":"WR","impact":87},{"name":"David Bakhtiari","pos":"LT","impact":93},{"name":"Clay Matthews","pos":"LB","impact":91},{"name":"Charles Woodson","pos":"CB","impact":91},{"name":"Ha Ha Clinton-Dix","pos":"FS","impact":85},{"name":"Mason Crosby","pos":"K","impact":91},{"name":"Jermichael Finley","pos":"TE","impact":91},{"name":"Josh Sitton","pos":"LG","impact":95},{"name":"Corey Linsley","pos":"C","impact":93},{"name":"B.J. Raji","pos":"DT","impact":90},{"name":"Tim Masthay","pos":"P","impact":85}]},"2010s|HOU":{"era":"2010s","team":"Houston Texans","players":[{"name":"Matt Schaub","pos":"QB","impact":86},{"name":"Deshaun Watson","pos":"QB","impact":91},{"name":"Arian Foster","pos":"RB","impact":92},{"name":"Andre Johnson","pos":"WR","impact":90},{"name":"DeAndre Hopkins","pos":"WR","impact":93},{"name":"Duane Brown","pos":"LT","impact":90},{"name":"J.J. Watt","pos":"DE","impact":99},{"name":"Whitney Mercilus","pos":"DE","impact":84},{"name":"Johnathan Joseph","pos":"CB","impact":87},{"name":"Shane Lechler","pos":"P","impact":92},{"name":"Owen Daniels","pos":"TE","impact":90},{"name":"Wade Smith","pos":"LG","impact":87},{"name":"Chris Myers","pos":"C","impact":92},{"name":"Vince Wilfork","pos":"DT","impact":87},{"name":"Brian Cushing","pos":"LB","impact":90},{"name":"Randy Bullock","pos":"K","impact":83}]},"2010s|IND":{"era":"2010s","team":"Indianapolis Colts","players":[{"name":"Andrew Luck","pos":"QB","impact":93},{"name":"Frank Gore","pos":"RB","impact":86},{"name":"T.Y. Hilton","pos":"WR","impact":90},{"name":"Reggie Wayne","pos":"WR","impact":85},{"name":"Anthony Castonzo","pos":"LT","impact":87},{"name":"Quenton Nelson","pos":"LG","impact":93},{"name":"Robert Mathis","pos":"DE","impact":89},{"name":"Darius Leonard","pos":"LB","impact":92},{"name":"Pat McAfee","pos":"P","impact":95},{"name":"Adam Vinatieri","pos":"K","impact":93},{"name":"Jack Doyle","pos":"TE","impact":89},{"name":"Ryan Kelly","pos":"C","impact":92},{"name":"Johnathan Hankins","pos":"DT","impact":86},{"name":"Vontae Davis","pos":"CB","impact":95},{"name":"Antoine Bethea","pos":"FS","impact":88}]},"2010s|JAX":{"era":"2010s","team":"Jacksonville Jaguars","players":[{"name":"Blake Bortles","pos":"QB","impact":85},{"name":"Maurice Jones-Drew","pos":"RB","impact":88},{"name":"Leonard Fournette","pos":"RB","impact":86},{"name":"Allen Robinson","pos":"WR","impact":86},{"name":"Calais Campbell","pos":"DE","impact":90},{"name":"Yannick Ngakoue","pos":"DE","impact":86},{"name":"Telvin Smith","pos":"LB","impact":87},{"name":"Jalen Ramsey","pos":"CB","impact":93},{"name":"A.J. Bouye","pos":"CB","impact":90},{"name":"Josh Scobee","pos":"K","impact":87},{"name":"Marcedes Lewis","pos":"TE","impact":89},{"name":"Eugene Monroe","pos":"LT","impact":87},{"name":"Zane Beadles","pos":"LG","impact":86},{"name":"Brandon Linder","pos":"C","impact":92},{"name":"Malik Jackson","pos":"DT","impact":90},{"name":"Bryan Anger","pos":"P","impact":94}]},"2010s|KC":{"era":"2010s","team":"Kansas City Chiefs","players":[{"name":"Alex Smith","pos":"QB","impact":89},{"name":"Patrick Mahomes","pos":"QB","impact":99},{"name":"Jamaal Charles","pos":"RB","impact":94},{"name":"Tyreek Hill","pos":"WR","impact":92},{"name":"Travis Kelce","pos":"TE","impact":96},{"name":"Eric Berry","pos":"SS","impact":93},{"name":"Justin Houston","pos":"DE","impact":93},{"name":"Tamba Hali","pos":"DE","impact":88},{"name":"Derrick Johnson","pos":"LB","impact":89},{"name":"Dustin Colquitt","pos":"P","impact":91},{"name":"Eric Fisher","pos":"LT","impact":87},{"name":"Ben Grubbs","pos":"LG","impact":86},{"name":"Mitch Morse","pos":"C","impact":91},{"name":"Dontari Poe","pos":"DT","impact":91},{"name":"Marcus Peters","pos":"CB","impact":95},{"name":"Cairo Santos","pos":"K","impact":88}]},"2010s|LV":{"era":"2010s","team":"Oakland Raiders","players":[{"name":"Derek Carr","pos":"QB","impact":89},{"name":"Darren McFadden","pos":"RB","impact":85},{"name":"Latavius Murray","pos":"RB","impact":84},{"name":"Amari Cooper","pos":"WR","impact":87},{"name":"Rodney Hudson","pos":"C","impact":91},{"name":"Khalil Mack","pos":"DE","impact":95},{"name":"Charles Woodson","pos":"FS","impact":89},{"name":"Sebastian Janikowski","pos":"K","impact":91},{"name":"Marquette King","pos":"P","impact":89},{"name":"Nnamdi Asomugha","pos":"CB","impact":81},{"name":"Jared Cook","pos":"TE","impact":90},{"name":"Donald Penn","pos":"LT","impact":90},{"name":"Kelechi Osemele","pos":"LG","impact":94},{"name":"Justin Ellis","pos":"DT","impact":80},{"name":"Nick Roach","pos":"LB","impact":81}]},"2010s|LAC":{"era":"2010s","team":"Chargers (San Diego / Los Angeles)","players":[{"name":"Philip Rivers","pos":"QB","impact":92},{"name":"Ryan Mathews","pos":"RB","impact":84},{"name":"Melvin Gordon","pos":"RB","impact":88},{"name":"Keenan Allen","pos":"WR","impact":90},{"name":"Antonio Gates","pos":"TE","impact":91},{"name":"Eric Weddle","pos":"FS","impact":92},{"name":"Joey Bosa","pos":"DE","impact":89},{"name":"Melvin Ingram","pos":"DE","impact":86},{"name":"Casey Hayward","pos":"CB","impact":90},{"name":"Nick Novak","pos":"K","impact":84},{"name":"King Dunlap","pos":"LT","impact":85},{"name":"Kris Dielman","pos":"LG","impact":92},{"name":"Nick Hardwick","pos":"C","impact":92},{"name":"Corey Liuget","pos":"DT","impact":87},{"name":"Donald Butler","pos":"LB","impact":86},{"name":"Mike Scifres","pos":"P","impact":94}]},"2010s|LAR":{"era":"2010s","team":"Rams (St. Louis / Los Angeles)","players":[{"name":"Sam Bradford","pos":"QB","impact":85},{"name":"Jared Goff","pos":"QB","impact":89},{"name":"Todd Gurley","pos":"RB","impact":96},{"name":"Steven Jackson","pos":"RB","impact":87},{"name":"Cooper Kupp","pos":"WR","impact":87},{"name":"Andrew Whitworth","pos":"LT","impact":92},{"name":"Aaron Donald","pos":"DT","impact":99},{"name":"Robert Quinn","pos":"DE","impact":88},{"name":"Johnny Hekker","pos":"P","impact":99},{"name":"Greg Zuerlein","pos":"K","impact":92},{"name":"Lance Kendricks","pos":"TE","impact":84},{"name":"Rodger Saffold","pos":"LG","impact":92},{"name":"John Sullivan","pos":"C","impact":87},{"name":"Alec Ogletree","pos":"LB","impact":88},{"name":"Trumaine Johnson","pos":"CB","impact":90},{"name":"Lamarcus Joyner","pos":"FS","impact":88}]},"2010s|MIA":{"era":"2010s","team":"Miami Dolphins","players":[{"name":"Ryan Tannehill","pos":"QB","impact":87},{"name":"Reggie Bush","pos":"RB","impact":83},{"name":"Jarvis Landry","pos":"WR","impact":89},{"name":"Mike Pouncey","pos":"C","impact":88},{"name":"Cameron Wake","pos":"DE","impact":92},{"name":"Ndamukong Suh","pos":"DT","impact":88},{"name":"Reshad Jones","pos":"SS","impact":88},{"name":"Xavien Howard","pos":"CB","impact":88},{"name":"Jason Taylor","pos":"DE","impact":80},{"name":"Dan Carpenter","pos":"K","impact":85},{"name":"Charles Clay","pos":"TE","impact":88},{"name":"Jake Long","pos":"LT","impact":91},{"name":"Richie Incognito","pos":"LG","impact":88},{"name":"Karlos Dansby","pos":"LB","impact":89},{"name":"Brandon Fields","pos":"P","impact":91}]},"2010s|MIN":{"era":"2010s","team":"Minnesota Vikings","players":[{"name":"Brett Favre","pos":"QB","impact":86},{"name":"Kirk Cousins","pos":"QB","impact":89},{"name":"Adrian Peterson","pos":"RB","impact":99},{"name":"Stefon Diggs","pos":"WR","impact":89},{"name":"Adam Thielen","pos":"WR","impact":89},{"name":"Kyle Rudolph","pos":"TE","impact":86},{"name":"Jared Allen","pos":"DE","impact":90},{"name":"Harrison Smith","pos":"SS","impact":93},{"name":"Everson Griffen","pos":"DE","impact":87},{"name":"Blair Walsh","pos":"K","impact":84},{"name":"Matt Kalil","pos":"LT","impact":86},{"name":"Charlie Johnson","pos":"LG","impact":84},{"name":"John Sullivan","pos":"C","impact":89},{"name":"Linval Joseph","pos":"DT","impact":92},{"name":"Chad Greenway","pos":"LB","impact":90},{"name":"Xavier Rhodes","pos":"CB","impact":95},{"name":"Jeff Locke","pos":"P","impact":82}]},"2010s|NE":{"era":"2010s","team":"New England Patriots","players":[{"name":"Tom Brady","pos":"QB","impact":99},{"name":"LeGarrette Blount","pos":"RB","impact":87},{"name":"Julian Edelman","pos":"WR","impact":90},{"name":"Rob Gronkowski","pos":"TE","impact":99},{"name":"Nate Solder","pos":"LT","impact":86},{"name":"Logan Mankins","pos":"LG","impact":90},{"name":"Dont'a Hightower","pos":"LB","impact":90},{"name":"Devin McCourty","pos":"FS","impact":92},{"name":"Stephon Gilmore","pos":"CB","impact":95},{"name":"Stephen Gostkowski","pos":"K","impact":96},{"name":"David Andrews","pos":"C","impact":92},{"name":"Vince Wilfork","pos":"DT","impact":91},{"name":"Ryan Allen","pos":"P","impact":91}]},"2010s|NO":{"era":"2010s","team":"New Orleans Saints","players":[{"name":"Drew Brees","pos":"QB","impact":95},{"name":"Mark Ingram","pos":"RB","impact":88},{"name":"Alvin Kamara","pos":"RB","impact":92},{"name":"Marques Colston","pos":"WR","impact":87},{"name":"Michael Thomas","pos":"WR","impact":93},{"name":"Jimmy Graham","pos":"TE","impact":93},{"name":"Cameron Jordan","pos":"DE","impact":92},{"name":"Demario Davis","pos":"LB","impact":88},{"name":"Marshon Lattimore","pos":"CB","impact":90},{"name":"Thomas Morstead","pos":"P","impact":94},{"name":"Terron Armstead","pos":"LT","impact":95},{"name":"Andrus Peat","pos":"LG","impact":87},{"name":"Max Unger","pos":"C","impact":93},{"name":"Sheldon Rankins","pos":"DT","impact":86},{"name":"Wil Lutz","pos":"K","impact":91}]},"2010s|NYG":{"era":"2010s","team":"New York Giants","players":[{"name":"Eli Manning","pos":"QB","impact":89},{"name":"Ahmad Bradshaw","pos":"RB","impact":86},{"name":"Odell Beckham Jr.","pos":"WR","impact":92},{"name":"Victor Cruz","pos":"WR","impact":87},{"name":"Justin Tuck","pos":"DE","impact":86},{"name":"Jason Pierre-Paul","pos":"DE","impact":88},{"name":"Landon Collins","pos":"SS","impact":88},{"name":"Janoris Jenkins","pos":"CB","impact":85},{"name":"Lawrence Tynes","pos":"K","impact":85},{"name":"Steve Weatherford","pos":"P","impact":86},{"name":"Evan Engram","pos":"TE","impact":89},{"name":"Will Beatty","pos":"LT","impact":86},{"name":"Justin Pugh","pos":"LG","impact":88},{"name":"Weston Richburg","pos":"C","impact":88},{"name":"Damon Harrison","pos":"DT","impact":93},{"name":"Jonathan Casillas","pos":"LB","impact":83}]},"2010s|NYJ":{"era":"2010s","team":"New York Jets","players":[{"name":"Mark Sanchez","pos":"QB","impact":84},{"name":"Ryan Fitzpatrick","pos":"QB","impact":86},{"name":"Chris Ivory","pos":"RB","impact":85},{"name":"Brandon Marshall","pos":"WR","impact":87},{"name":"Nick Mangold","pos":"C","impact":92},{"name":"D'Brickashaw Ferguson","pos":"LT","impact":88},{"name":"Darrelle Revis","pos":"CB","impact":97},{"name":"Muhammad Wilkerson","pos":"DE","impact":87},{"name":"Antonio Cromartie","pos":"CB","impact":87},{"name":"Nick Folk","pos":"K","impact":88},{"name":"Dustin Keller","pos":"TE","impact":89},{"name":"Matt Slauson","pos":"LG","impact":87},{"name":"Damon Harrison","pos":"DT","impact":92},{"name":"David Harris","pos":"LB","impact":91},{"name":"Steve Weatherford","pos":"P","impact":90}]},"2010s|PHI":{"era":"2010s","team":"Philadelphia Eagles","players":[{"name":"Michael Vick","pos":"QB","impact":89},{"name":"Carson Wentz","pos":"QB","impact":90},{"name":"LeSean McCoy","pos":"RB","impact":93},{"name":"DeSean Jackson","pos":"WR","impact":90},{"name":"Jason Peters","pos":"LT","impact":93},{"name":"Jason Kelce","pos":"C","impact":94},{"name":"Fletcher Cox","pos":"DT","impact":93},{"name":"Brandon Graham","pos":"DE","impact":88},{"name":"Malcolm Jenkins","pos":"SS","impact":89},{"name":"Jake Elliott","pos":"K","impact":87},{"name":"Zach Ertz","pos":"TE","impact":94},{"name":"Evan Mathis","pos":"LG","impact":95},{"name":"Mychal Kendricks","pos":"LB","impact":87},{"name":"Ronald Darby","pos":"CB","impact":87},{"name":"Donnie Jones","pos":"P","impact":90}]},"2010s|PIT":{"era":"2010s","team":"Pittsburgh Steelers","players":[{"name":"Ben Roethlisberger","pos":"QB","impact":93},{"name":"Le'Veon Bell","pos":"RB","impact":94},{"name":"Antonio Brown","pos":"WR","impact":96},{"name":"Maurkice Pouncey","pos":"C","impact":92},{"name":"David DeCastro","pos":"RG","impact":91},{"name":"James Harrison","pos":"LB","impact":89},{"name":"Cameron Heyward","pos":"DT","impact":91},{"name":"Troy Polamalu","pos":"SS","impact":89},{"name":"Joe Haden","pos":"CB","impact":86},{"name":"Shaun Suisham","pos":"K","impact":85},{"name":"Heath Miller","pos":"TE","impact":92},{"name":"Alejandro Villanueva","pos":"LT","impact":90},{"name":"Jordan Berry","pos":"P","impact":84}]},"2010s|SF":{"era":"2010s","team":"San Francisco 49ers","players":[{"name":"Alex Smith","pos":"QB","impact":86},{"name":"Colin Kaepernick","pos":"QB","impact":88},{"name":"Frank Gore","pos":"RB","impact":91},{"name":"Vernon Davis","pos":"TE","impact":90},{"name":"Joe Staley","pos":"LT","impact":92},{"name":"Patrick Willis","pos":"LB","impact":94},{"name":"NaVorro Bowman","pos":"LB","impact":92},{"name":"Justin Smith","pos":"DE","impact":90},{"name":"Richard Sherman","pos":"CB","impact":88},{"name":"David Akers","pos":"K","impact":89},{"name":"Michael Crabtree","pos":"WR","impact":89},{"name":"Mike Iupati","pos":"LG","impact":94},{"name":"Jonathan Goodwin","pos":"C","impact":88},{"name":"Glenn Dorsey","pos":"NT","impact":86},{"name":"Andy Lee","pos":"P","impact":96},{"name":"Randy Moss","pos":"WR","impact":80}]},"2010s|SEA":{"era":"2010s","team":"Seattle Seahawks","players":[{"name":"Russell Wilson","pos":"QB","impact":94},{"name":"Marshawn Lynch","pos":"RB","impact":93},{"name":"Doug Baldwin","pos":"WR","impact":89},{"name":"Jimmy Graham","pos":"TE","impact":88},{"name":"Max Unger","pos":"C","impact":87},{"name":"Michael Bennett","pos":"DE","impact":89},{"name":"Bobby Wagner","pos":"LB","impact":96},{"name":"Richard Sherman","pos":"CB","impact":97},{"name":"Earl Thomas","pos":"FS","impact":94},{"name":"Kam Chancellor","pos":"SS","impact":93},{"name":"Russell Okung","pos":"LT","impact":90},{"name":"James Carpenter","pos":"LG","impact":86},{"name":"Brandon Mebane","pos":"DT","impact":90},{"name":"Steven Hauschka","pos":"K","impact":92},{"name":"Jon Ryan","pos":"P","impact":91}]},"2010s|TB":{"era":"2010s","team":"Tampa Bay Buccaneers","players":[{"name":"Jameis Winston","pos":"QB","impact":87},{"name":"Doug Martin","pos":"RB","impact":88},{"name":"Mike Evans","pos":"WR","impact":91},{"name":"Vincent Jackson","pos":"WR","impact":86},{"name":"Lavonte David","pos":"LB","impact":92},{"name":"Gerald McCoy","pos":"DT","impact":90},{"name":"Ronde Barber","pos":"CB","impact":82},{"name":"Ali Marpet","pos":"RG","impact":90},{"name":"Connor Barth","pos":"K","impact":85},{"name":"Bryan Anger","pos":"P","impact":89},{"name":"Cameron Brate","pos":"TE","impact":89},{"name":"Donald Penn","pos":"LT","impact":88},{"name":"Joe Hawley","pos":"C","impact":82}]},"2010s|TEN":{"era":"2010s","team":"Tennessee Titans","players":[{"name":"Marcus Mariota","pos":"QB","impact":86},{"name":"Ryan Tannehill","pos":"QB","impact":87},{"name":"Chris Johnson","pos":"RB","impact":90},{"name":"Derrick Henry","pos":"RB","impact":92},{"name":"Delanie Walker","pos":"TE","impact":89},{"name":"Taylor Lewan","pos":"LT","impact":87},{"name":"Jurrell Casey","pos":"DT","impact":90},{"name":"Kevin Byard","pos":"FS","impact":89},{"name":"Brett Kern","pos":"P","impact":95},{"name":"Rob Bironas","pos":"K","impact":88},{"name":"Nate Washington","pos":"WR","impact":87},{"name":"Andy Levitre","pos":"LG","impact":86},{"name":"Ben Jones","pos":"C","impact":89},{"name":"Brian Orakpo","pos":"OLB","impact":88},{"name":"Wesley Woodyard","pos":"LB","impact":88},{"name":"Jason McCourty","pos":"CB","impact":90},{"name":"Randy Moss","pos":"WR","impact":75}]},"2010s|WAS":{"era":"2010s","team":"Washington","players":[{"name":"Robert Griffin III","pos":"QB","impact":89},{"name":"Kirk Cousins","pos":"QB","impact":89},{"name":"Alfred Morris","pos":"RB","impact":88},{"name":"Pierre Garcon","pos":"WR","impact":86},{"name":"Trent Williams","pos":"LT","impact":96},{"name":"Ryan Kerrigan","pos":"DE","impact":89},{"name":"London Fletcher","pos":"LB","impact":88},{"name":"Josh Norman","pos":"CB","impact":84},{"name":"DeAngelo Hall","pos":"CB","impact":85},{"name":"Tress Way","pos":"P","impact":92},{"name":"Jordan Reed","pos":"TE","impact":93},{"name":"Shawn Lauvao","pos":"LG","impact":84},{"name":"Kory Lichtensteiger","pos":"C","impact":86},{"name":"Barry Cofield","pos":"DT","impact":86},{"name":"Kai Forbath","pos":"K","impact":87}]},"2000s|ARI":{"era":"2000s","team":"Arizona Cardinals","players":[{"name":"Kurt Warner","pos":"QB","impact":91},{"name":"Edgerrin James","pos":"RB","impact":84},{"name":"Larry Fitzgerald","pos":"WR","impact":92},{"name":"Anquan Boldin","pos":"WR","impact":90},{"name":"Leonard Davis","pos":"LT","impact":86},{"name":"Darnell Dockett","pos":"DT","impact":85},{"name":"Adrian Wilson","pos":"SS","impact":89},{"name":"Karlos Dansby","pos":"LB","impact":86},{"name":"Neil Rackers","pos":"K","impact":89},{"name":"Scott Player","pos":"P","impact":84},{"name":"Freddie Jones","pos":"TE","impact":88},{"name":"Reggie Wells","pos":"LG","impact":85},{"name":"Lyle Sendlein","pos":"C","impact":83},{"name":"Antrel Rolle","pos":"CB","impact":90}]},"2000s|ATL":{"era":"2000s","team":"Atlanta Falcons","players":[{"name":"Michael Vick","pos":"QB","impact":92},{"name":"Warrick Dunn","pos":"RB","impact":88},{"name":"Roddy White","pos":"WR","impact":87},{"name":"Alge Crumpler","pos":"TE","impact":89},{"name":"Todd McClure","pos":"C","impact":87},{"name":"Patrick Kerney","pos":"DE","impact":86},{"name":"Keith Brooking","pos":"LB","impact":89},{"name":"DeAngelo Hall","pos":"CB","impact":87},{"name":"Morten Andersen","pos":"K","impact":89},{"name":"Michael Koenen","pos":"P","impact":84},{"name":"Wayne Gandy","pos":"LT","impact":85},{"name":"Kynan Forney","pos":"LG","impact":86},{"name":"Rod Coleman","pos":"DT","impact":91}]},"2000s|BAL":{"era":"2000s","team":"Baltimore Ravens","players":[{"name":"Steve McNair","pos":"QB","impact":89},{"name":"Jamal Lewis","pos":"RB","impact":92},{"name":"Todd Heap","pos":"TE","impact":89},{"name":"Jonathan Ogden","pos":"LT","impact":96},{"name":"Ray Lewis","pos":"LB","impact":99},{"name":"Ed Reed","pos":"FS","impact":99},{"name":"Terrell Suggs","pos":"DE","impact":90},{"name":"Chris McAlister","pos":"CB","impact":90},{"name":"Matt Stover","pos":"K","impact":92},{"name":"Sam Koch","pos":"P","impact":89},{"name":"Derrick Mason","pos":"WR","impact":91},{"name":"Edwin Mulitalo","pos":"LG","impact":87},{"name":"Mike Flynn","pos":"C","impact":87},{"name":"Kelly Gregg","pos":"DT","impact":91}]},"2000s|BUF":{"era":"2000s","team":"Buffalo Bills","players":[{"name":"Drew Bledsoe","pos":"QB","impact":87},{"name":"Travis Henry","pos":"RB","impact":85},{"name":"Willis McGahee","pos":"RB","impact":88},{"name":"Eric Moulds","pos":"WR","impact":88},{"name":"Lee Evans","pos":"WR","impact":86},{"name":"Jason Peters","pos":"LT","impact":88},{"name":"Aaron Schobel","pos":"DE","impact":86},{"name":"Terrence McGee","pos":"CB","impact":87},{"name":"Rian Lindell","pos":"K","impact":85},{"name":"Brian Moorman","pos":"P","impact":94},{"name":"Mark Campbell","pos":"TE","impact":83},{"name":"Derrick Dockery","pos":"LG","impact":87},{"name":"Trey Teague","pos":"C","impact":86},{"name":"Sam Adams","pos":"DT","impact":91},{"name":"London Fletcher","pos":"LB","impact":94}]},"2000s|CAR":{"era":"2000s","team":"Carolina Panthers","players":[{"name":"Jake Delhomme","pos":"QB","impact":89},{"name":"DeAngelo Williams","pos":"RB","impact":89},{"name":"Steve Smith Sr.","pos":"WR","impact":93},{"name":"Muhsin Muhammad","pos":"WR","impact":88},{"name":"Jordan Gross","pos":"LT","impact":90},{"name":"Julius Peppers","pos":"DE","impact":95},{"name":"Dan Morgan","pos":"LB","impact":85},{"name":"Chris Gamble","pos":"CB","impact":86},{"name":"John Kasay","pos":"K","impact":91},{"name":"Todd Sauerbrun","pos":"P","impact":89},{"name":"Kris Mangum","pos":"TE","impact":83},{"name":"Mike Wahle","pos":"LG","impact":90},{"name":"Jeff Mitchell","pos":"C","impact":87},{"name":"Kris Jenkins","pos":"DT","impact":94}]},"2000s|CHI":{"era":"2000s","team":"Chicago Bears","players":[{"name":"Rex Grossman","pos":"QB","impact":84},{"name":"Thomas Jones","pos":"RB","impact":88},{"name":"Matt Forte","pos":"RB","impact":87},{"name":"Marty Booker","pos":"WR","impact":84},{"name":"Olin Kreutz","pos":"C","impact":92},{"name":"Brian Urlacher","pos":"LB","impact":96},{"name":"Lance Briggs","pos":"LB","impact":91},{"name":"Charles Tillman","pos":"CB","impact":91},{"name":"Devin Hester","pos":"KR","impact":99},{"name":"Robbie Gould","pos":"K","impact":91},{"name":"Desmond Clark","pos":"TE","impact":88},{"name":"John Tait","pos":"LT","impact":87},{"name":"Ruben Brown","pos":"LG","impact":90},{"name":"Tommie Harris","pos":"DT","impact":93},{"name":"Brad Maynard","pos":"P","impact":91}]},"2000s|CIN":{"era":"2000s","team":"Cincinnati Bengals","players":[{"name":"Carson Palmer","pos":"QB","impact":90},{"name":"Rudi Johnson","pos":"RB","impact":88},{"name":"Chad Johnson","pos":"WR","impact":92},{"name":"T.J. Houshmandzadeh","pos":"WR","impact":87},{"name":"Willie Anderson","pos":"RT","impact":91},{"name":"Justin Smith","pos":"DE","impact":87},{"name":"Takeo Spikes","pos":"LB","impact":87},{"name":"Leon Hall","pos":"CB","impact":84},{"name":"Shayne Graham","pos":"K","impact":89},{"name":"Kyle Larson","pos":"P","impact":82},{"name":"Reggie Kelly","pos":"TE","impact":83},{"name":"Eric Steinbach","pos":"LG","impact":92},{"name":"Rich Braham","pos":"C","impact":87},{"name":"John Thornton","pos":"DT","impact":86}]},"2000s|CLE":{"era":"2000s","team":"Cleveland Browns","players":[{"name":"Tim Couch","pos":"QB","impact":84},{"name":"Jamal Lewis","pos":"RB","impact":85},{"name":"Braylon Edwards","pos":"WR","impact":86},{"name":"Kellen Winslow II","pos":"TE","impact":85},{"name":"Joe Thomas","pos":"LT","impact":93},{"name":"D'Qwell Jackson","pos":"LB","impact":85},{"name":"Andra Davis","pos":"LB","impact":82},{"name":"Leigh Bodden","pos":"CB","impact":82},{"name":"Phil Dawson","pos":"K","impact":93},{"name":"Dave Zastudil","pos":"P","impact":87},{"name":"Eric Steinbach","pos":"LG","impact":88},{"name":"Jeff Faine","pos":"C","impact":87},{"name":"Shaun Rogers","pos":"DT","impact":92}]},"2000s|DAL":{"era":"2000s","team":"Dallas Cowboys","players":[{"name":"Tony Romo","pos":"QB","impact":91},{"name":"Emmitt Smith","pos":"RB","impact":85},{"name":"Marion Barber","pos":"RB","impact":87},{"name":"Terrell Owens","pos":"WR","impact":90},{"name":"Jason Witten","pos":"TE","impact":94},{"name":"Flozell Adams","pos":"LT","impact":87},{"name":"DeMarcus Ware","pos":"DE","impact":95},{"name":"Roy Williams","pos":"SS","impact":87},{"name":"Terence Newman","pos":"CB","impact":87},{"name":"Mat McBriar","pos":"P","impact":91},{"name":"Kyle Kosier","pos":"LG","impact":87},{"name":"Andre Gurode","pos":"C","impact":92},{"name":"Jay Ratliff","pos":"DT","impact":93},{"name":"Bradie James","pos":"LB","impact":88},{"name":"Nick Folk","pos":"K","impact":89}]},"2000s|DEN":{"era":"2000s","team":"Denver Broncos","players":[{"name":"Jake Plummer","pos":"QB","impact":88},{"name":"Jay Cutler","pos":"QB","impact":87},{"name":"Clinton Portis","pos":"RB","impact":91},{"name":"Rod Smith","pos":"WR","impact":89},{"name":"Tom Nalen","pos":"C","impact":91},{"name":"Champ Bailey","pos":"CB","impact":97},{"name":"Al Wilson","pos":"LB","impact":89},{"name":"Trevor Pryce","pos":"DE","impact":86},{"name":"Jason Elam","pos":"K","impact":94},{"name":"Mike Leach","pos":"LS","impact":81},{"name":"Tony Scheffler","pos":"TE","impact":88},{"name":"Matt Lepsis","pos":"LT","impact":87},{"name":"Ben Hamilton","pos":"LG","impact":87},{"name":"Gerard Warren","pos":"DT","impact":86},{"name":"Todd Sauerbrun","pos":"P","impact":90}]},"2000s|DET":{"era":"2000s","team":"Detroit Lions","players":[{"name":"Joey Harrington","pos":"QB","impact":81},{"name":"Kevin Jones","pos":"RB","impact":82},{"name":"Roy Williams","pos":"WR","impact":86},{"name":"Calvin Johnson","pos":"WR","impact":90},{"name":"Dominic Raiola","pos":"C","impact":85},{"name":"Shaun Rogers","pos":"DT","impact":86},{"name":"Dre' Bly","pos":"CB","impact":87},{"name":"Ernie Sims","pos":"LB","impact":81},{"name":"Jason Hanson","pos":"K","impact":94},{"name":"Nick Harris","pos":"P","impact":87},{"name":"Marcus Pollard","pos":"TE","impact":85},{"name":"Jeff Backus","pos":"LT","impact":88},{"name":"Damien Woody","pos":"LG","impact":87}]},"2000s|GB":{"era":"2000s","team":"Green Bay Packers","players":[{"name":"Brett Favre","pos":"QB","impact":92},{"name":"Aaron Rodgers","pos":"QB","impact":87},{"name":"Ahman Green","pos":"RB","impact":92},{"name":"Donald Driver","pos":"WR","impact":90},{"name":"Javon Walker","pos":"WR","impact":85},{"name":"Chad Clifton","pos":"LT","impact":87},{"name":"Darren Sharper","pos":"FS","impact":89},{"name":"Al Harris","pos":"CB","impact":87},{"name":"Kabeer Gbaja-Biamila","pos":"DE","impact":86},{"name":"Ryan Longwell","pos":"K","impact":89},{"name":"Bubba Franks","pos":"TE","impact":90},{"name":"Daryn Colledge","pos":"LG","impact":86},{"name":"Scott Wells","pos":"C","impact":88},{"name":"Ryan Pickett","pos":"DT","impact":88},{"name":"Nick Barnett","pos":"LB","impact":91},{"name":"Jon Ryan","pos":"P","impact":86}]},"2000s|HOU":{"era":"2000s","team":"Houston Texans","players":[{"name":"David Carr","pos":"QB","impact":84},{"name":"Matt Schaub","pos":"QB","impact":87},{"name":"Domanick Williams","pos":"RB","impact":85},{"name":"Andre Johnson","pos":"WR","impact":92},{"name":"Owen Daniels","pos":"TE","impact":88},{"name":"Chester Pitts","pos":"LG","impact":83},{"name":"Mario Williams","pos":"DE","impact":88},{"name":"DeMeco Ryans","pos":"LB","impact":88},{"name":"Dunta Robinson","pos":"CB","impact":85},{"name":"Kris Brown","pos":"K","impact":87},{"name":"Ephraim Salaam","pos":"LT","impact":82},{"name":"Steve McKinney","pos":"C","impact":86},{"name":"Travis Johnson","pos":"DT","impact":80},{"name":"Matt Turk","pos":"P","impact":89}]},"2000s|IND":{"era":"2000s","team":"Indianapolis Colts","players":[{"name":"Peyton Manning","pos":"QB","impact":99},{"name":"Edgerrin James","pos":"RB","impact":92},{"name":"Joseph Addai","pos":"RB","impact":88},{"name":"Marvin Harrison","pos":"WR","impact":93},{"name":"Reggie Wayne","pos":"WR","impact":91},{"name":"Jeff Saturday","pos":"C","impact":92},{"name":"Dwight Freeney","pos":"DE","impact":93},{"name":"Robert Mathis","pos":"DE","impact":89},{"name":"Bob Sanders","pos":"SS","impact":90},{"name":"Adam Vinatieri","pos":"K","impact":96},{"name":"Dallas Clark","pos":"TE","impact":96},{"name":"Tarik Glenn","pos":"LT","impact":93},{"name":"Ryan Lilja","pos":"LG","impact":88},{"name":"Anthony McFarland","pos":"DT","impact":86},{"name":"Gary Brackett","pos":"LB","impact":90},{"name":"Kelvin Hayden","pos":"CB","impact":90},{"name":"Hunter Smith","pos":"P","impact":91}]},"2000s|JAX":{"era":"2000s","team":"Jacksonville Jaguars","players":[{"name":"Mark Brunell","pos":"QB","impact":86},{"name":"David Garrard","pos":"QB","impact":87},{"name":"Fred Taylor","pos":"RB","impact":92},{"name":"Maurice Jones-Drew","pos":"RB","impact":90},{"name":"Jimmy Smith","pos":"WR","impact":89},{"name":"Tony Boselli","pos":"LT","impact":81},{"name":"John Henderson","pos":"DT","impact":87},{"name":"Marcus Stroud","pos":"DT","impact":87},{"name":"Rashean Mathis","pos":"CB","impact":87},{"name":"Josh Scobee","pos":"K","impact":89},{"name":"Marcedes Lewis","pos":"TE","impact":88},{"name":"Vince Manuwai","pos":"LG","impact":88},{"name":"Brad Meester","pos":"C","impact":92},{"name":"Paul Spicer","pos":"DE","impact":87},{"name":"Mike Peterson","pos":"LB","impact":91},{"name":"Chris Hanson","pos":"P","impact":85}]},"2000s|KC":{"era":"2000s","team":"Kansas City Chiefs","players":[{"name":"Trent Green","pos":"QB","impact":90},{"name":"Priest Holmes","pos":"RB","impact":94},{"name":"Larry Johnson","pos":"RB","impact":90},{"name":"Tony Gonzalez","pos":"TE","impact":99},{"name":"Willie Roaf","pos":"LT","impact":93},{"name":"Will Shields","pos":"RG","impact":96},{"name":"Jared Allen","pos":"DE","impact":89},{"name":"Derrick Johnson","pos":"LB","impact":86},{"name":"Dante Hall","pos":"KR","impact":93},{"name":"Dustin Colquitt","pos":"P","impact":89},{"name":"Casey Wiegmann","pos":"C","impact":92},{"name":"Glenn Dorsey","pos":"DT","impact":82},{"name":"Patrick Surtain","pos":"CB","impact":90},{"name":"Jerome Woods","pos":"FS","impact":88},{"name":"Lawrence Tynes","pos":"K","impact":88},{"name":"Eddie Kennison","pos":"WR","impact":87}]},"2000s|LV":{"era":"2000s","team":"Oakland Raiders","players":[{"name":"Rich Gannon","pos":"QB","impact":94},{"name":"Charlie Garner","pos":"RB","impact":88},{"name":"Jerry Rice","pos":"WR","impact":89},{"name":"Tim Brown","pos":"WR","impact":87},{"name":"Lincoln Kennedy","pos":"RT","impact":88},{"name":"Charles Woodson","pos":"CB","impact":90},{"name":"Nnamdi Asomugha","pos":"CB","impact":92},{"name":"Derrick Burgess","pos":"DE","impact":86},{"name":"Sebastian Janikowski","pos":"K","impact":91},{"name":"Shane Lechler","pos":"P","impact":99},{"name":"Zach Miller","pos":"TE","impact":91},{"name":"Barry Sims","pos":"LG","impact":87},{"name":"Jake Grove","pos":"C","impact":85},{"name":"Warren Sapp","pos":"DT","impact":88},{"name":"Kirk Morrison","pos":"LB","impact":88},{"name":"Randy Moss","pos":"WR","impact":84}]},"2000s|LAC":{"era":"2000s","team":"San Diego Chargers","players":[{"name":"Drew Brees","pos":"QB","impact":89},{"name":"Philip Rivers","pos":"QB","impact":91},{"name":"LaDainian Tomlinson","pos":"RB","impact":99},{"name":"Antonio Gates","pos":"TE","impact":96},{"name":"Vincent Jackson","pos":"WR","impact":87},{"name":"Kris Dielman","pos":"LG","impact":90},{"name":"Jamal Williams","pos":"DT","impact":88},{"name":"Shawne Merriman","pos":"LB","impact":91},{"name":"Antonio Cromartie","pos":"CB","impact":87},{"name":"Nate Kaeding","pos":"K","impact":91},{"name":"Marcus McNeill","pos":"LT","impact":91},{"name":"Nick Hardwick","pos":"C","impact":93},{"name":"Mike Scifres","pos":"P","impact":95}]},"2000s|LAR":{"era":"2000s","team":"St. Louis Rams","players":[{"name":"Kurt Warner","pos":"QB","impact":93},{"name":"Marc Bulger","pos":"QB","impact":89},{"name":"Marshall Faulk","pos":"RB","impact":96},{"name":"Steven Jackson","pos":"RB","impact":89},{"name":"Torry Holt","pos":"WR","impact":93},{"name":"Isaac Bruce","pos":"WR","impact":91},{"name":"Orlando Pace","pos":"LT","impact":96},{"name":"Leonard Little","pos":"DE","impact":87},{"name":"Aeneas Williams","pos":"CB","impact":88},{"name":"Jeff Wilkins","pos":"K","impact":91},{"name":"Ernie Conwell","pos":"TE","impact":85},{"name":"Adam Timmerman","pos":"LG","impact":92},{"name":"Andy McCollum","pos":"C","impact":88},{"name":"Ryan Pickett","pos":"DT","impact":86},{"name":"Pisa Tinoisamoa","pos":"LB","impact":87},{"name":"Donnie Jones","pos":"P","impact":89}]},"2000s|MIA":{"era":"2000s","team":"Miami Dolphins","players":[{"name":"Jay Fiedler","pos":"QB","impact":84},{"name":"Ronnie Brown","pos":"RB","impact":87},{"name":"Ricky Williams","pos":"RB","impact":91},{"name":"Chris Chambers","pos":"WR","impact":87},{"name":"Jason Taylor","pos":"DE","impact":95},{"name":"Zach Thomas","pos":"LB","impact":94},{"name":"Sam Madison","pos":"CB","impact":90},{"name":"Patrick Surtain","pos":"CB","impact":88},{"name":"Olindo Mare","pos":"K","impact":89},{"name":"Brandon Fields","pos":"P","impact":87},{"name":"Randy McMichael","pos":"TE","impact":89},{"name":"Damion McIntosh","pos":"LT","impact":82},{"name":"Jeno James","pos":"LG","impact":86},{"name":"Samson Satele","pos":"C","impact":85},{"name":"Tim Bowens","pos":"DT","impact":90}]},"2000s|MIN":{"era":"2000s","team":"Minnesota Vikings","players":[{"name":"Daunte Culpepper","pos":"QB","impact":93},{"name":"Adrian Peterson","pos":"RB","impact":94},{"name":"Randy Moss","pos":"WR","impact":92},{"name":"Chris Carter","pos":"WR","impact":85},{"name":"Steve Hutchinson","pos":"LG","impact":94},{"name":"Matt Birk","pos":"C","impact":91},{"name":"Jared Allen","pos":"DE","impact":90},{"name":"Kevin Williams","pos":"DT","impact":91},{"name":"Antoine Winfield","pos":"CB","impact":90},{"name":"Ryan Longwell","pos":"K","impact":89},{"name":"Jim Kleinsasser","pos":"TE","impact":89},{"name":"Bryant McKinnie","pos":"LT","impact":91},{"name":"E.J. Henderson","pos":"LB","impact":90},{"name":"Chris Kluwe","pos":"P","impact":90}]},"2000s|NE":{"era":"2000s","team":"New England Patriots","players":[{"name":"Tom Brady","pos":"QB","impact":99},{"name":"Corey Dillon","pos":"RB","impact":90},{"name":"Kevin Faulk","pos":"RB","impact":86},{"name":"Randy Moss","pos":"WR","impact":99},{"name":"Wes Welker","pos":"WR","impact":91},{"name":"Matt Light","pos":"LT","impact":88},{"name":"Richard Seymour","pos":"DE","impact":90},{"name":"Tedy Bruschi","pos":"LB","impact":89},{"name":"Ty Law","pos":"CB","impact":90},{"name":"Adam Vinatieri","pos":"K","impact":96},{"name":"Ben Watson","pos":"TE","impact":89},{"name":"Logan Mankins","pos":"LG","impact":95},{"name":"Dan Koppen","pos":"C","impact":92},{"name":"Vince Wilfork","pos":"DT","impact":94},{"name":"Josh Miller","pos":"P","impact":89}]},"2000s|NO":{"era":"2000s","team":"New Orleans Saints","players":[{"name":"Aaron Brooks","pos":"QB","impact":87},{"name":"Drew Brees","pos":"QB","impact":94},{"name":"Deuce McAllister","pos":"RB","impact":90},{"name":"Reggie Bush","pos":"RB","impact":86},{"name":"Joe Horn","pos":"WR","impact":89},{"name":"Jahri Evans","pos":"RG","impact":92},{"name":"Will Smith","pos":"DE","impact":86},{"name":"Jonathan Vilma","pos":"LB","impact":87},{"name":"Darren Sharper","pos":"FS","impact":87},{"name":"John Carney","pos":"K","impact":89},{"name":"Jeremy Shockey","pos":"TE","impact":89},{"name":"Jammal Brown","pos":"LT","impact":92},{"name":"Jonathan Goodwin","pos":"C","impact":87},{"name":"Hollis Thomas","pos":"DT","impact":86},{"name":"Mike McKenzie","pos":"CB","impact":91},{"name":"Mitch Berger","pos":"P","impact":89}]},"2000s|NYG":{"era":"2000s","team":"New York Giants","players":[{"name":"Eli Manning","pos":"QB","impact":90},{"name":"Tiki Barber","pos":"RB","impact":93},{"name":"Brandon Jacobs","pos":"RB","impact":88},{"name":"Amani Toomer","pos":"WR","impact":87},{"name":"Jeremy Shockey","pos":"TE","impact":89},{"name":"Michael Strahan","pos":"DE","impact":95},{"name":"Osi Umenyiora","pos":"DE","impact":89},{"name":"Antonio Pierce","pos":"LB","impact":87},{"name":"R.W. McQuarters","pos":"CB","impact":81},{"name":"Jeff Feagles","pos":"P","impact":94},{"name":"David Diehl","pos":"LT","impact":88},{"name":"Rich Seubert","pos":"LG","impact":87},{"name":"Shaun O'Hara","pos":"C","impact":92},{"name":"Fred Robbins","pos":"DT","impact":87},{"name":"Lawrence Tynes","pos":"K","impact":92}]},"2000s|NYJ":{"era":"2000s","team":"New York Jets","players":[{"name":"Chad Pennington","pos":"QB","impact":89},{"name":"Curtis Martin","pos":"RB","impact":93},{"name":"Thomas Jones","pos":"RB","impact":88},{"name":"Laveranues Coles","pos":"WR","impact":87},{"name":"Kevin Mawae","pos":"C","impact":93},{"name":"D'Brickashaw Ferguson","pos":"LT","impact":88},{"name":"John Abraham","pos":"DE","impact":88},{"name":"Darrelle Revis","pos":"CB","impact":92},{"name":"Shaun Ellis","pos":"DE","impact":86},{"name":"Jay Feely","pos":"K","impact":87},{"name":"Anthony Becht","pos":"TE","impact":86},{"name":"Pete Kendall","pos":"LG","impact":87},{"name":"Kris Jenkins","pos":"DT","impact":92},{"name":"Jonathan Vilma","pos":"LB","impact":92},{"name":"Ben Graham","pos":"P","impact":87}]},"2000s|PHI":{"era":"2000s","team":"Philadelphia Eagles","players":[{"name":"Donovan McNabb","pos":"QB","impact":93},{"name":"Brian Westbrook","pos":"RB","impact":92},{"name":"Terrell Owens","pos":"WR","impact":89},{"name":"DeSean Jackson","pos":"WR","impact":87},{"name":"Jon Runyan","pos":"RT","impact":88},{"name":"Tra Thomas","pos":"LT","impact":87},{"name":"Brian Dawkins","pos":"FS","impact":96},{"name":"Jeremiah Trotter","pos":"LB","impact":89},{"name":"Trent Cole","pos":"DE","impact":87},{"name":"David Akers","pos":"K","impact":94},{"name":"Chad Lewis","pos":"TE","impact":89},{"name":"Todd Herremans","pos":"LG","impact":90},{"name":"Jamaal Jackson","pos":"C","impact":88},{"name":"Corey Simon","pos":"DT","impact":91},{"name":"Lito Sheppard","pos":"CB","impact":93},{"name":"Dirk Johnson","pos":"P","impact":85}]},"2000s|PIT":{"era":"2000s","team":"Pittsburgh Steelers","players":[{"name":"Ben Roethlisberger","pos":"QB","impact":91},{"name":"Jerome Bettis","pos":"RB","impact":89},{"name":"Willie Parker","pos":"RB","impact":88},{"name":"Hines Ward","pos":"WR","impact":91},{"name":"Alan Faneca","pos":"LG","impact":94},{"name":"James Harrison","pos":"LB","impact":94},{"name":"Troy Polamalu","pos":"SS","impact":96},{"name":"Casey Hampton","pos":"DT","impact":90},{"name":"Ike Taylor","pos":"CB","impact":87},{"name":"Jeff Reed","pos":"K","impact":88},{"name":"Heath Miller","pos":"TE","impact":93},{"name":"Marvel Smith","pos":"LT","impact":88},{"name":"Jeff Hartings","pos":"C","impact":92},{"name":"Daniel Sepulveda","pos":"P","impact":86}]},"2000s|SF":{"era":"2000s","team":"San Francisco 49ers","players":[{"name":"Jeff Garcia","pos":"QB","impact":89},{"name":"Frank Gore","pos":"RB","impact":90},{"name":"Terrell Owens","pos":"WR","impact":91},{"name":"Vernon Davis","pos":"TE","impact":86},{"name":"Joe Staley","pos":"LT","impact":86},{"name":"Julian Peterson","pos":"LB","impact":87},{"name":"Patrick Willis","pos":"LB","impact":94},{"name":"Nate Clements","pos":"CB","impact":86},{"name":"Joe Nedney","pos":"K","impact":88},{"name":"Andy Lee","pos":"P","impact":94},{"name":"Justin Smiley","pos":"LG","impact":86},{"name":"Jeremy Newberry","pos":"C","impact":92},{"name":"Bryant Young","pos":"DT","impact":93}]},"2000s|SEA":{"era":"2000s","team":"Seattle Seahawks","players":[{"name":"Matt Hasselbeck","pos":"QB","impact":91},{"name":"Shaun Alexander","pos":"RB","impact":96},{"name":"Darrell Jackson","pos":"WR","impact":87},{"name":"Walter Jones","pos":"LT","impact":96},{"name":"Steve Hutchinson","pos":"LG","impact":93},{"name":"Lofa Tatupu","pos":"LB","impact":88},{"name":"Marcus Trufant","pos":"CB","impact":87},{"name":"Julian Peterson","pos":"LB","impact":87},{"name":"Josh Brown","pos":"K","impact":89},{"name":"Jon Ryan","pos":"P","impact":87},{"name":"Jerramy Stevens","pos":"TE","impact":85},{"name":"Robbie Tobeck","pos":"C","impact":88},{"name":"Rocky Bernard","pos":"DT","impact":87}]},"2000s|TB":{"era":"2000s","team":"Tampa Bay Buccaneers","players":[{"name":"Brad Johnson","pos":"QB","impact":88},{"name":"Warrick Dunn","pos":"RB","impact":86},{"name":"Mike Alstott","pos":"RB","impact":88},{"name":"Keyshawn Johnson","pos":"WR","impact":87},{"name":"Derrick Brooks","pos":"LB","impact":96},{"name":"Warren Sapp","pos":"DT","impact":92},{"name":"Ronde Barber","pos":"CB","impact":95},{"name":"John Lynch","pos":"SS","impact":93},{"name":"Simeon Rice","pos":"DE","impact":90},{"name":"Martin Gramatica","pos":"K","impact":91},{"name":"Ken Dilger","pos":"TE","impact":89},{"name":"Kenyatta Walker","pos":"LT","impact":84},{"name":"Cosey Coleman","pos":"LG","impact":86},{"name":"John Wade","pos":"C","impact":87},{"name":"Josh Bidwell","pos":"P","impact":91}]},"2000s|TEN":{"era":"2000s","team":"Tennessee Titans","players":[{"name":"Steve McNair","pos":"QB","impact":93},{"name":"Vince Young","pos":"QB","impact":86},{"name":"Eddie George","pos":"RB","impact":90},{"name":"Chris Johnson","pos":"RB","impact":91},{"name":"Derrick Mason","pos":"WR","impact":88},{"name":"Keith Bulluck","pos":"LB","impact":90},{"name":"Albert Haynesworth","pos":"DT","impact":90},{"name":"Kyle Vanden Bosch","pos":"DE","impact":86},{"name":"Rob Bironas","pos":"K","impact":92},{"name":"Craig Hentrich","pos":"P","impact":89},{"name":"Frank Wycheck","pos":"TE","impact":91},{"name":"Brad Hopkins","pos":"LT","impact":90},{"name":"Zach Piller","pos":"LG","impact":86},{"name":"Kevin Mawae","pos":"C","impact":94},{"name":"Samari Rolle","pos":"CB","impact":91},{"name":"Chris Hope","pos":"FS","impact":89}]},"2000s|WAS":{"era":"2000s","team":"Washington","players":[{"name":"Mark Brunell","pos":"QB","impact":85},{"name":"Clinton Portis","pos":"RB","impact":91},{"name":"Santana Moss","pos":"WR","impact":89},{"name":"Chris Cooley","pos":"TE","impact":89},{"name":"Chris Samuels","pos":"LT","impact":90},{"name":"LaVar Arrington","pos":"LB","impact":87},{"name":"London Fletcher","pos":"LB","impact":90},{"name":"Sean Taylor","pos":"FS","impact":93},{"name":"Champ Bailey","pos":"CB","impact":87},{"name":"Shawn Suisham","pos":"K","impact":83},{"name":"Derrick Dockery","pos":"LG","impact":87},{"name":"Casey Rabach","pos":"C","impact":87},{"name":"Cornelius Griffin","pos":"DT","impact":90},{"name":"Hunter Smith","pos":"P","impact":87}]},"1990s|ARI":{"era":"1990s","team":"Arizona Cardinals","players":[{"name":"Jake Plummer","pos":"QB","impact":86},{"name":"Garrison Hearst","pos":"RB","impact":85},{"name":"Larry Centers","pos":"RB","impact":88},{"name":"Rob Moore","pos":"WR","impact":87},{"name":"Aeneas Williams","pos":"CB","impact":97},{"name":"Eric Swann","pos":"DT","impact":88},{"name":"Seth Joyner","pos":"LB","impact":86},{"name":"Kwamie Lassiter","pos":"FS","impact":82},{"name":"Kevin Butler","pos":"K","impact":83},{"name":"Scott Player","pos":"P","impact":82},{"name":"Chris Gedney","pos":"TE","impact":82},{"name":"Lomas Brown","pos":"LT","impact":90},{"name":"Joe Wolf","pos":"LG","impact":84},{"name":"Mike Devlin","pos":"C","impact":83}]},"1990s|ATL":{"era":"1990s","team":"Atlanta Falcons","players":[{"name":"Chris Chandler","pos":"QB","impact":89},{"name":"Jamal Anderson","pos":"RB","impact":92},{"name":"Andre Rison","pos":"WR","impact":90},{"name":"Terance Mathis","pos":"WR","impact":87},{"name":"Bob Whitfield","pos":"LT","impact":87},{"name":"Jessie Tuggle","pos":"LB","impact":94},{"name":"Chuck Smith","pos":"DE","impact":86},{"name":"Ray Buchanan","pos":"CB","impact":88},{"name":"Morten Andersen","pos":"K","impact":96},{"name":"Dan Stryzinski","pos":"P","impact":82},{"name":"O.J. Santiago","pos":"TE","impact":85},{"name":"Gene Williams","pos":"LG","impact":86},{"name":"Robbie Tobeck","pos":"C","impact":88},{"name":"Travis Hall","pos":"DT","impact":88}]},"1990s|BAL":{"era":"1990s","team":"Baltimore Ravens","players":[{"name":"Vinny Testaverde","pos":"QB","impact":88},{"name":"Eric Zeier","pos":"QB","impact":82},{"name":"Earnest Byner","pos":"RB","impact":84},{"name":"Michael Jackson","pos":"WR","impact":84},{"name":"Jonathan Ogden","pos":"LT","impact":92},{"name":"Ray Lewis","pos":"LB","impact":92},{"name":"Peter Boulware","pos":"LB","impact":88},{"name":"Michael McCrary","pos":"DE","impact":86},{"name":"Matt Stover","pos":"K","impact":92},{"name":"Jermaine Lewis","pos":"KR","impact":88},{"name":"Eric Green","pos":"TE","impact":89},{"name":"Jeff Blackshear","pos":"LG","impact":86},{"name":"Wally Williams","pos":"C","impact":87},{"name":"Tony Siragusa","pos":"DT","impact":91},{"name":"Duane Starks","pos":"CB","impact":88},{"name":"Rod Woodson","pos":"FS","impact":95},{"name":"Kyle Richardson","pos":"P","impact":87}]},"1990s|BUF":{"era":"1990s","team":"Buffalo Bills","players":[{"name":"Jim Kelly","pos":"QB","impact":94},{"name":"Thurman Thomas","pos":"RB","impact":96},{"name":"Andre Reed","pos":"WR","impact":92},{"name":"James Lofton","pos":"WR","impact":88},{"name":"Kent Hull","pos":"C","impact":92},{"name":"Bruce Smith","pos":"DE","impact":99},{"name":"Cornelius Bennett","pos":"LB","impact":91},{"name":"Darryl Talley","pos":"LB","impact":90},{"name":"Steve Tasker","pos":"KR","impact":93},{"name":"Steve Christie","pos":"K","impact":89},{"name":"Pete Metzelaars","pos":"TE","impact":90},{"name":"John Fina","pos":"LT","impact":88},{"name":"Ruben Brown","pos":"LG","impact":93},{"name":"Ted Washington","pos":"DT","impact":92},{"name":"Thomas Smith","pos":"CB","impact":88},{"name":"Henry Jones","pos":"FS","impact":92},{"name":"Chris Mohr","pos":"P","impact":89}]},"1990s|CAR":{"era":"1990s","team":"Carolina Panthers","players":[{"name":"Kerry Collins","pos":"QB","impact":87},{"name":"Steve Beuerlein","pos":"QB","impact":88},{"name":"Anthony Johnson","pos":"RB","impact":83},{"name":"Muhsin Muhammad","pos":"WR","impact":86},{"name":"Wesley Walls","pos":"TE","impact":91},{"name":"Kevin Greene","pos":"LB","impact":91},{"name":"Sam Mills","pos":"LB","impact":92},{"name":"Eric Davis","pos":"CB","impact":88},{"name":"John Kasay","pos":"K","impact":92},{"name":"Rohn Stark","pos":"P","impact":86},{"name":"Blake Brockermeyer","pos":"LT","impact":86},{"name":"Matt Elliott","pos":"LG","impact":84},{"name":"Frank Garcia","pos":"C","impact":86},{"name":"Sean Gilbert","pos":"DT","impact":91}]},"1990s|CHI":{"era":"1990s","team":"Chicago Bears","players":[{"name":"Jim Harbaugh","pos":"QB","impact":87},{"name":"Erik Kramer","pos":"QB","impact":87},{"name":"Neal Anderson","pos":"RB","impact":88},{"name":"Curtis Conway","pos":"WR","impact":86},{"name":"Tom Waddle","pos":"WR","impact":82},{"name":"Richard Dent","pos":"DE","impact":89},{"name":"Trace Armstrong","pos":"DE","impact":86},{"name":"Mark Carrier","pos":"FS","impact":89},{"name":"Kevin Butler","pos":"K","impact":89},{"name":"Todd Sauerbrun","pos":"P","impact":84},{"name":"John Allred","pos":"TE","impact":81},{"name":"Andy Heck","pos":"LT","impact":86},{"name":"Mark Bortz","pos":"LG","impact":91},{"name":"Jerry Fontenot","pos":"C","impact":87},{"name":"Chris Zorich","pos":"DT","impact":88},{"name":"Bryan Cox","pos":"LB","impact":90},{"name":"Donnell Woolford","pos":"CB","impact":92}]},"1990s|CIN":{"era":"1990s","team":"Cincinnati Bengals","players":[{"name":"Boomer Esiason","pos":"QB","impact":87},{"name":"Jeff Blake","pos":"QB","impact":87},{"name":"Corey Dillon","pos":"RB","impact":91},{"name":"Carl Pickens","pos":"WR","impact":90},{"name":"Darnay Scott","pos":"WR","impact":86},{"name":"Anthony Munoz","pos":"LT","impact":86},{"name":"Alfred Williams","pos":"DE","impact":83},{"name":"Takeo Spikes","pos":"LB","impact":83},{"name":"Doug Pelfrey","pos":"K","impact":85},{"name":"Lee Johnson","pos":"P","impact":86},{"name":"Tony McGee","pos":"TE","impact":89},{"name":"Bruce Reimers","pos":"LG","impact":87},{"name":"Bruce Kozerski","pos":"C","impact":87},{"name":"Tim Krumrie","pos":"DT","impact":90},{"name":"Ashley Ambrose","pos":"CB","impact":91},{"name":"Darryl Williams","pos":"FS","impact":88}]},"1990s|CLE":{"era":"1990s","team":"Cleveland Browns","players":[{"name":"Bernie Kosar","pos":"QB","impact":87},{"name":"Vinny Testaverde","pos":"QB","impact":86},{"name":"Leroy Hoard","pos":"RB","impact":86},{"name":"Eric Metcalf","pos":"RB","impact":88},{"name":"Michael Jackson","pos":"WR","impact":83},{"name":"Clay Matthews Jr.","pos":"LB","impact":90},{"name":"Pepper Johnson","pos":"LB","impact":87},{"name":"Eric Turner","pos":"FS","impact":89},{"name":"Matt Stover","pos":"K","impact":89},{"name":"Tom Tupa","pos":"P","impact":89},{"name":"Brian Kinchen","pos":"TE","impact":83},{"name":"Tony Jones","pos":"LT","impact":90},{"name":"John Rienstra","pos":"LG","impact":84},{"name":"Mike Baab","pos":"C","impact":86},{"name":"Michael Dean Perry","pos":"DT","impact":93},{"name":"Frank Minnifield","pos":"CB","impact":90}]},"1990s|DAL":{"era":"1990s","team":"Dallas Cowboys","players":[{"name":"Troy Aikman","pos":"QB","impact":94},{"name":"Emmitt Smith","pos":"RB","impact":99},{"name":"Michael Irvin","pos":"WR","impact":96},{"name":"Jay Novacek","pos":"TE","impact":93},{"name":"Larry Allen","pos":"LG","impact":99},{"name":"Charles Haley","pos":"DE","impact":92},{"name":"Darren Woodson","pos":"SS","impact":93},{"name":"Deion Sanders","pos":"CB","impact":97},{"name":"Ken Norton Jr.","pos":"LB","impact":88},{"name":"Chris Boniol","pos":"K","impact":87},{"name":"Mark Tuinei","pos":"LT","impact":93},{"name":"Mark Stepnoski","pos":"C","impact":96},{"name":"Russell Maryland","pos":"DT","impact":91},{"name":"John Jett","pos":"P","impact":90}]},"1990s|DEN":{"era":"1990s","team":"Denver Broncos","players":[{"name":"John Elway","pos":"QB","impact":95},{"name":"Terrell Davis","pos":"RB","impact":99},{"name":"Rod Smith","pos":"WR","impact":89},{"name":"Shannon Sharpe","pos":"TE","impact":98},{"name":"Gary Zimmerman","pos":"LT","impact":92},{"name":"Steve Atwater","pos":"FS","impact":94},{"name":"Karl Mecklenburg","pos":"LB","impact":89},{"name":"Neil Smith","pos":"DE","impact":88},{"name":"Jason Elam","pos":"K","impact":94},{"name":"Tom Rouen","pos":"P","impact":87},{"name":"Mark Schlereth","pos":"LG","impact":93},{"name":"Tom Nalen","pos":"C","impact":94},{"name":"Trevor Pryce","pos":"DT","impact":90},{"name":"Ray Crockett","pos":"CB","impact":90}]},"1990s|DET":{"era":"1990s","team":"Detroit Lions","players":[{"name":"Scott Mitchell","pos":"QB","impact":87},{"name":"Barry Sanders","pos":"RB","impact":99},{"name":"Herman Moore","pos":"WR","impact":92},{"name":"Brett Perriman","pos":"WR","impact":87},{"name":"Lomas Brown","pos":"LT","impact":88},{"name":"Chris Spielman","pos":"LB","impact":91},{"name":"Robert Porcher","pos":"DE","impact":86},{"name":"Bennie Blades","pos":"SS","impact":89},{"name":"Jason Hanson","pos":"K","impact":93},{"name":"John Jett","pos":"P","impact":85},{"name":"David Sloan","pos":"TE","impact":86},{"name":"Mike Compton","pos":"LG","impact":87},{"name":"Kevin Glover","pos":"C","impact":94},{"name":"Henry Thomas","pos":"DT","impact":91},{"name":"Bryant Westbrook","pos":"CB","impact":86}]},"1990s|GB":{"era":"1990s","team":"Green Bay Packers","players":[{"name":"Brett Favre","pos":"QB","impact":99},{"name":"Dorsey Levens","pos":"RB","impact":88},{"name":"Antonio Freeman","pos":"WR","impact":89},{"name":"Robert Brooks","pos":"WR","impact":87},{"name":"Mark Chmura","pos":"TE","impact":89},{"name":"Reggie White","pos":"DE","impact":95},{"name":"LeRoy Butler","pos":"SS","impact":94},{"name":"Sean Jones","pos":"DE","impact":88},{"name":"Chris Jacke","pos":"K","impact":89},{"name":"Craig Hentrich","pos":"P","impact":86},{"name":"Ken Ruettgers","pos":"LT","impact":90},{"name":"Aaron Taylor","pos":"LG","impact":90},{"name":"Frank Winters","pos":"C","impact":92},{"name":"Gilbert Brown","pos":"DT","impact":91},{"name":"Bryce Paup","pos":"LB","impact":94},{"name":"Doug Evans","pos":"CB","impact":90}]},"1990s|IND":{"era":"1990s","team":"Indianapolis Colts","players":[{"name":"Jim Harbaugh","pos":"QB","impact":89},{"name":"Marshall Faulk","pos":"RB","impact":93},{"name":"Edgerrin James","pos":"RB","impact":90},{"name":"Marvin Harrison","pos":"WR","impact":90},{"name":"Tarik Glenn","pos":"LT","impact":85},{"name":"Tony Siragusa","pos":"DT","impact":84},{"name":"Jeff Herrod","pos":"LB","impact":85},{"name":"Ray Buchanan","pos":"CB","impact":85},{"name":"Mike Vanderjagt","pos":"K","impact":89},{"name":"Rohn Stark","pos":"P","impact":87},{"name":"Ken Dilger","pos":"TE","impact":90},{"name":"Ron Solt","pos":"LG","impact":85},{"name":"Jeff Uhlenhake","pos":"C","impact":87}]},"1990s|JAX":{"era":"1990s","team":"Jacksonville Jaguars","players":[{"name":"Mark Brunell","pos":"QB","impact":92},{"name":"Fred Taylor","pos":"RB","impact":90},{"name":"Jimmy Smith","pos":"WR","impact":91},{"name":"Keenan McCardell","pos":"WR","impact":88},{"name":"Tony Boselli","pos":"LT","impact":96},{"name":"Tony Brackens","pos":"DE","impact":87},{"name":"Kevin Hardy","pos":"LB","impact":87},{"name":"Aaron Beasley","pos":"CB","impact":86},{"name":"Mike Hollis","pos":"K","impact":91},{"name":"Bryan Barker","pos":"P","impact":89},{"name":"Pete Mitchell","pos":"TE","impact":89},{"name":"Ben Coleman","pos":"LG","impact":86},{"name":"Dave Widell","pos":"C","impact":85},{"name":"Gary Walker","pos":"DT","impact":87}]},"1990s|KC":{"era":"1990s","team":"Kansas City Chiefs","players":[{"name":"Joe Montana","pos":"QB","impact":90},{"name":"Steve Bono","pos":"QB","impact":86},{"name":"Marcus Allen","pos":"RB","impact":90},{"name":"Christian Okoye","pos":"RB","impact":85},{"name":"Derrick Thomas","pos":"LB","impact":96},{"name":"Neil Smith","pos":"DE","impact":90},{"name":"Dale Carter","pos":"CB","impact":90},{"name":"Will Shields","pos":"RG","impact":92},{"name":"Nick Lowery","pos":"K","impact":94},{"name":"Louie Aguiar","pos":"P","impact":86},{"name":"Andre Rison","pos":"WR","impact":89},{"name":"Tony Gonzalez","pos":"TE","impact":96},{"name":"John Alt","pos":"LT","impact":91},{"name":"Tim Grunhard","pos":"C","impact":92},{"name":"Dan Saleaumua","pos":"DT","impact":92}]},"1990s|LV":{"era":"1990s","team":"Raiders (Los Angeles / Oakland)","players":[{"name":"Jeff Hostetler","pos":"QB","impact":88},{"name":"Rich Gannon","pos":"QB","impact":87},{"name":"Marcus Allen","pos":"RB","impact":86},{"name":"Napoleon Kaufman","pos":"RB","impact":86},{"name":"Tim Brown","pos":"WR","impact":93},{"name":"Steve Wisniewski","pos":"LG","impact":93},{"name":"Howie Long","pos":"DE","impact":86},{"name":"Terry McDaniel","pos":"CB","impact":88},{"name":"Jeff Jaeger","pos":"K","impact":89},{"name":"Jeff Gossett","pos":"P","impact":86},{"name":"Ethan Horton","pos":"TE","impact":89},{"name":"Bruce Wilkerson","pos":"LT","impact":84},{"name":"Don Mosebar","pos":"C","impact":92},{"name":"Chester McGlockton","pos":"DT","impact":93},{"name":"Greg Biekert","pos":"LB","impact":88}]},"1990s|LAC":{"era":"1990s","team":"San Diego Chargers","players":[{"name":"Stan Humphries","pos":"QB","impact":89},{"name":"Natrone Means","pos":"RB","impact":88},{"name":"Rodney Culver","pos":"RB","impact":83},{"name":"Tony Martin","pos":"WR","impact":87},{"name":"Junior Seau","pos":"LB","impact":96},{"name":"Leslie O'Neal","pos":"DE","impact":90},{"name":"Rodney Harrison","pos":"SS","impact":89},{"name":"Gill Byrd","pos":"CB","impact":85},{"name":"John Carney","pos":"K","impact":94},{"name":"Darren Bennett","pos":"P","impact":95},{"name":"Alfred Pupunu","pos":"TE","impact":85},{"name":"Vaughn Parker","pos":"LT","impact":86},{"name":"Dennis McKnight","pos":"LG","impact":84},{"name":"Courtney Hall","pos":"C","impact":91},{"name":"Reuben Davis","pos":"DT","impact":87}]},"1990s|LAR":{"era":"1990s","team":"Rams (Los Angeles / St. Louis)","players":[{"name":"Jim Everett","pos":"QB","impact":86},{"name":"Chris Miller","pos":"QB","impact":85},{"name":"Jerome Bettis","pos":"RB","impact":88},{"name":"Marshall Faulk","pos":"RB","impact":92},{"name":"Isaac Bruce","pos":"WR","impact":92},{"name":"Orlando Pace","pos":"LT","impact":91},{"name":"Kevin Greene","pos":"LB","impact":90},{"name":"Sean Gilbert","pos":"DT","impact":86},{"name":"Todd Lyght","pos":"CB","impact":87},{"name":"Jeff Wilkins","pos":"K","impact":89},{"name":"Ernie Conwell","pos":"TE","impact":85},{"name":"Tom Newberry","pos":"LG","impact":88},{"name":"Mike Gruttadauria","pos":"C","impact":86},{"name":"Sean Landeta","pos":"P","impact":95}]},"1990s|MIA":{"era":"1990s","team":"Miami Dolphins","players":[{"name":"Dan Marino","pos":"QB","impact":95},{"name":"Karim Abdul-Jabbar","pos":"RB","impact":84},{"name":"Mark Clayton","pos":"WR","impact":87},{"name":"O.J. McDuffie","pos":"WR","impact":88},{"name":"Richmond Webb","pos":"LT","impact":92},{"name":"Bryan Cox","pos":"LB","impact":89},{"name":"Jason Taylor","pos":"DE","impact":86},{"name":"Terrell Buckley","pos":"CB","impact":84},{"name":"Pete Stoyanovich","pos":"K","impact":89},{"name":"Reggie Roby","pos":"P","impact":91},{"name":"Troy Drayton","pos":"TE","impact":88},{"name":"Keith Sims","pos":"LG","impact":93},{"name":"Jeff Dellenbach","pos":"C","impact":88},{"name":"Tim Bowens","pos":"DT","impact":92}]},"1990s|MIN":{"era":"1990s","team":"Minnesota Vikings","players":[{"name":"Warren Moon","pos":"QB","impact":91},{"name":"Randall Cunningham","pos":"QB","impact":92},{"name":"Robert Smith","pos":"RB","impact":90},{"name":"Cris Carter","pos":"WR","impact":96},{"name":"Randy Moss","pos":"WR","impact":96},{"name":"Randall McDaniel","pos":"LG","impact":96},{"name":"John Randle","pos":"DT","impact":96},{"name":"Chris Doleman","pos":"DE","impact":89},{"name":"Gary Anderson","pos":"K","impact":94},{"name":"Mitch Berger","pos":"P","impact":85},{"name":"Steve Jordan","pos":"TE","impact":93},{"name":"Todd Steussie","pos":"LT","impact":87},{"name":"Matt Birk","pos":"C","impact":87},{"name":"Ed McDaniel","pos":"LB","impact":90},{"name":"Carl Lee","pos":"CB","impact":88},{"name":"Orlando Thomas","pos":"FS","impact":89}]},"1990s|NE":{"era":"1990s","team":"New England Patriots","players":[{"name":"Drew Bledsoe","pos":"QB","impact":91},{"name":"Curtis Martin","pos":"RB","impact":91},{"name":"Terry Glenn","pos":"WR","impact":87},{"name":"Ben Coates","pos":"TE","impact":94},{"name":"Bruce Armstrong","pos":"LT","impact":88},{"name":"Willie McGinest","pos":"LB","impact":88},{"name":"Ty Law","pos":"CB","impact":90},{"name":"Chris Slade","pos":"LB","impact":87},{"name":"Adam Vinatieri","pos":"K","impact":91},{"name":"Tom Tupa","pos":"P","impact":87},{"name":"Todd Rucci","pos":"LG","impact":86},{"name":"Dave Wohlabaugh","pos":"C","impact":87},{"name":"Ray Agnew","pos":"DT","impact":87}]},"1990s|NO":{"era":"1990s","team":"New Orleans Saints","players":[{"name":"Bobby Hebert","pos":"QB","impact":87},{"name":"Jim Everett","pos":"QB","impact":87},{"name":"Dalton Hilliard","pos":"RB","impact":85},{"name":"Eric Martin","pos":"WR","impact":87},{"name":"Willie Roaf","pos":"LT","impact":96},{"name":"Rickey Jackson","pos":"LB","impact":91},{"name":"Pat Swilling","pos":"LB","impact":92},{"name":"Sam Mills","pos":"LB","impact":91},{"name":"Morten Andersen","pos":"K","impact":94},{"name":"Tommy Barnhardt","pos":"P","impact":85},{"name":"Wesley Walls","pos":"TE","impact":89},{"name":"Wally Williams","pos":"LG","impact":85},{"name":"Joel Hilgenberg","pos":"C","impact":87},{"name":"Wayne Martin","pos":"DT","impact":93},{"name":"Toi Cook","pos":"CB","impact":87},{"name":"Gene Atkins","pos":"FS","impact":87}]},"1990s|NYG":{"era":"1990s","team":"New York Giants","players":[{"name":"Phil Simms","pos":"QB","impact":88},{"name":"Dave Brown","pos":"QB","impact":82},{"name":"Rodney Hampton","pos":"RB","impact":89},{"name":"Amani Toomer","pos":"WR","impact":84},{"name":"Mark Bavaro","pos":"TE","impact":84},{"name":"Michael Strahan","pos":"DE","impact":89},{"name":"Jessie Armstead","pos":"LB","impact":89},{"name":"Carl Banks","pos":"LB","impact":86},{"name":"Brad Daluiso","pos":"K","impact":85},{"name":"Sean Landeta","pos":"P","impact":95},{"name":"Jumbo Elliott","pos":"LT","impact":90},{"name":"William Roberts","pos":"LG","impact":90},{"name":"Bart Oates","pos":"C","impact":93},{"name":"Keith Hamilton","pos":"DT","impact":91},{"name":"Phillippi Sparks","pos":"CB","impact":90},{"name":"Tito Wooten","pos":"FS","impact":86}]},"1990s|NYJ":{"era":"1990s","team":"New York Jets","players":[{"name":"Boomer Esiason","pos":"QB","impact":86},{"name":"Vinny Testaverde","pos":"QB","impact":90},{"name":"Adrian Murrell","pos":"RB","impact":86},{"name":"Keyshawn Johnson","pos":"WR","impact":89},{"name":"Wayne Chrebet","pos":"WR","impact":87},{"name":"Mo Lewis","pos":"LB","impact":89},{"name":"Aaron Glenn","pos":"CB","impact":88},{"name":"Marvin Jones","pos":"LB","impact":87},{"name":"John Hall","pos":"K","impact":85},{"name":"Tom Tupa","pos":"P","impact":89},{"name":"Johnny Mitchell","pos":"TE","impact":89},{"name":"Jumbo Elliott","pos":"LT","impact":88},{"name":"Dave Szott","pos":"LG","impact":93},{"name":"Jim Sweeney","pos":"C","impact":89},{"name":"Marvin Washington","pos":"DT","impact":87}]},"1990s|PHI":{"era":"1990s","team":"Philadelphia Eagles","players":[{"name":"Randall Cunningham","pos":"QB","impact":92},{"name":"Rodney Peete","pos":"QB","impact":84},{"name":"Herschel Walker","pos":"RB","impact":85},{"name":"Ricky Watters","pos":"RB","impact":90},{"name":"Fred Barnett","pos":"WR","impact":87},{"name":"Reggie White","pos":"DE","impact":90},{"name":"Seth Joyner","pos":"LB","impact":90},{"name":"Eric Allen","pos":"CB","impact":92},{"name":"Gary Anderson","pos":"K","impact":89},{"name":"Sean Landeta","pos":"P","impact":94},{"name":"Keith Jackson","pos":"TE","impact":94},{"name":"Ron Heller","pos":"LT","impact":86},{"name":"Mike Schad","pos":"LG","impact":86},{"name":"David Alexander","pos":"C","impact":87},{"name":"Andy Harmon","pos":"DT","impact":91}]},"1990s|PIT":{"era":"1990s","team":"Pittsburgh Steelers","players":[{"name":"Neil O'Donnell","pos":"QB","impact":89},{"name":"Kordell Stewart","pos":"QB","impact":87},{"name":"Jerome Bettis","pos":"RB","impact":92},{"name":"Yancey Thigpen","pos":"WR","impact":87},{"name":"Dermontti Dawson","pos":"C","impact":97},{"name":"Rod Woodson","pos":"CB","impact":97},{"name":"Greg Lloyd","pos":"LB","impact":94},{"name":"Kevin Greene","pos":"LB","impact":91},{"name":"Norm Johnson","pos":"K","impact":89},{"name":"Josh Miller","pos":"P","impact":87},{"name":"Eric Green","pos":"TE","impact":93},{"name":"John Jackson","pos":"LT","impact":91},{"name":"Duval Love","pos":"LG","impact":87},{"name":"Joel Steed","pos":"DT","impact":92}]},"1990s|SF":{"era":"1990s","team":"San Francisco 49ers","players":[{"name":"Joe Montana","pos":"QB","impact":91},{"name":"Steve Young","pos":"QB","impact":95},{"name":"Ricky Watters","pos":"RB","impact":90},{"name":"Jerry Rice","pos":"WR","impact":99},{"name":"Terrell Owens","pos":"WR","impact":87},{"name":"Brent Jones","pos":"TE","impact":91},{"name":"Bryant Young","pos":"DT","impact":91},{"name":"Ken Norton Jr.","pos":"LB","impact":88},{"name":"Merton Hanks","pos":"FS","impact":90},{"name":"Gary Anderson","pos":"K","impact":87},{"name":"Steve Wallace","pos":"LT","impact":92},{"name":"Ray Brown","pos":"LG","impact":91},{"name":"Jesse Sapolu","pos":"C","impact":94},{"name":"Eric Davis","pos":"CB","impact":93},{"name":"Klaus Wilmsmeyer","pos":"P","impact":87}]},"1990s|SEA":{"era":"1990s","team":"Seattle Seahawks","players":[{"name":"Dave Krieg","pos":"QB","impact":85},{"name":"Warren Moon","pos":"QB","impact":89},{"name":"Chris Warren","pos":"RB","impact":90},{"name":"Brian Blades","pos":"WR","impact":88},{"name":"Cortez Kennedy","pos":"DT","impact":96},{"name":"Chad Brown","pos":"LB","impact":87},{"name":"Eugene Robinson","pos":"FS","impact":88},{"name":"Michael Sinclair","pos":"DE","impact":86},{"name":"John Kasay","pos":"K","impact":84},{"name":"Rick Tuten","pos":"P","impact":87},{"name":"Christian Fauria","pos":"TE","impact":86},{"name":"Ray Roberts","pos":"LT","impact":86},{"name":"Pete Kendall","pos":"LG","impact":87},{"name":"Kevin Mawae","pos":"C","impact":92},{"name":"Shawn Springs","pos":"CB","impact":93}]},"1990s|TB":{"era":"1990s","team":"Tampa Bay Buccaneers","players":[{"name":"Vinny Testaverde","pos":"QB","impact":85},{"name":"Trent Dilfer","pos":"QB","impact":84},{"name":"Warrick Dunn","pos":"RB","impact":88},{"name":"Mike Alstott","pos":"RB","impact":89},{"name":"Keyshawn Johnson","pos":"WR","impact":84},{"name":"Warren Sapp","pos":"DT","impact":96},{"name":"Derrick Brooks","pos":"LB","impact":94},{"name":"John Lynch","pos":"SS","impact":93},{"name":"Martin Gramatica","pos":"K","impact":88},{"name":"Mark Royals","pos":"P","impact":86},{"name":"Dave Moore","pos":"TE","impact":86},{"name":"Paul Gruber","pos":"LT","impact":93},{"name":"Ian Beckles","pos":"LG","impact":87},{"name":"Tony Mayberry","pos":"C","impact":92},{"name":"Donnie Abraham","pos":"CB","impact":91}]},"1990s|TEN":{"era":"1990s","team":"Houston Oilers / Tennessee Oilers / Titans","players":[{"name":"Warren Moon","pos":"QB","impact":89},{"name":"Steve McNair","pos":"QB","impact":89},{"name":"Eddie George","pos":"RB","impact":92},{"name":"Ernest Givins","pos":"WR","impact":87},{"name":"Bruce Matthews","pos":"LG","impact":99},{"name":"Ray Childress","pos":"DT","impact":90},{"name":"Blaine Bishop","pos":"SS","impact":89},{"name":"Eddie Robinson","pos":"LB","impact":83},{"name":"Al Del Greco","pos":"K","impact":92},{"name":"Craig Hentrich","pos":"P","impact":89},{"name":"Frank Wycheck","pos":"TE","impact":92},{"name":"Brad Hopkins","pos":"LT","impact":88},{"name":"Mark Stepnoski","pos":"C","impact":93},{"name":"Samari Rolle","pos":"CB","impact":90}]},"1990s|WAS":{"era":"1990s","team":"Washington","players":[{"name":"Mark Rypien","pos":"QB","impact":91},{"name":"Gus Frerotte","pos":"QB","impact":85},{"name":"Earnest Byner","pos":"RB","impact":88},{"name":"Terry Allen","pos":"RB","impact":88},{"name":"Art Monk","pos":"WR","impact":89},{"name":"Gary Clark","pos":"WR","impact":89},{"name":"Darrell Green","pos":"CB","impact":97},{"name":"Charles Mann","pos":"DE","impact":87},{"name":"Chip Lohmiller","pos":"K","impact":89},{"name":"Matt Turk","pos":"P","impact":89},{"name":"Jamie Asher","pos":"TE","impact":85},{"name":"Jim Lachey","pos":"LT","impact":92},{"name":"Raleigh McKenzie","pos":"LG","impact":92},{"name":"Cory Raymer","pos":"C","impact":85},{"name":"Tim Johnson","pos":"DT","impact":86},{"name":"Ken Harvey","pos":"LB","impact":92}]}};
+const G={
+ off:["QB","RB","WR1","WR2","WR3","TE","LT","LG","C","RG","RT"],
+ def:["EDGE1","DT1","DT2","EDGE2","LB1","LB2","LB3","CB1","CB2","FS","SS"],
+ st:["K","P","KR/PR"]
+};
+const A=[...G.off,...G.def,...G.st],$=x=>document.getElementById(x);
+const ERAS=["1990s","2000s","2010s","2020s"];
+const AFC=new Set(["BAL","BUF","CIN","CLE","DEN","HOU","IND","JAX","KC","LV","LAC","MIA","NE","NYJ","PIT","TEN"]);
+const NFC=new Set(["ARI","ATL","CAR","CHI","DAL","DET","GB","LAR","MIN","NO","NYG","PHI","SF","SEA","TB","WAS"]);
+function conferenceOfKey(key){
+ const code=key.split("|")[1];
+ if(AFC.has(code))return "AFC";
+ if(NFC.has(code))return "NFC";
+ return null;
+}
+function oppositeConference(conf){return conf==="AFC"?"NFC":"AFC"}
+
+let S={
+ on:false,d:null,ro:{},hi:[],sl:null,p:null,
+ rolling:false,
+ season:null,history:[]
+};
+try{
+ const x=JSON.parse((localStorage.getItem("NFL_STARTER_SEASON_V8")||localStorage.getItem("NFL_STARTER_SEASON_V7")||localStorage.getItem("NFL_STARTER_SEASON_V6")||localStorage.getItem("NFL_STARTER_SEASON_V5")||localStorage.getItem("NFL_STARTER_SEASON_V4")||localStorage.getItem("NFL_STARTER_SEASON_V3")));
+ if(x&&x.ro)S={...S,...x};
+}catch(e){}
+if(!Array.isArray(S.history))S.history=[];
+
+function save(){try{localStorage.setItem("NFL_STARTER_SEASON_V8",JSON.stringify(S))}catch(e){}}
+function syncSavedRosterRatings(){
+ Object.values(S.ro||{}).forEach(x=>{
+  const key=x.draw;
+  if(!key||!D[key])return;
+  const p=D[key].players.find(q=>q.name===x.name);
+  if(p){x.baseImpact=p.impact;x.impact=slotImpact(x.slot||"",p);}
+ });
+}
+syncSavedRosterRatings();
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+function tok(p){return String(p).toUpperCase().split(/[^A-Z0-9]+/).filter(Boolean)}
+function ok(s,p){
+ let q=tok(p),h=(...x)=>x.some(y=>q.includes(y));
+ if(s=="QB")return h("QB");if(s=="RB")return h("RB","FB");if(s.startsWith("WR"))return h("WR");
+ if(s=="TE")return h("TE");if(s=="LT"||s=="RT")return h("LT","RT","OT","T");
+ if(s=="LG"||s=="RG")return h("LG","RG","G","OG");if(s=="C")return h("C");
+ if(s.startsWith("EDGE"))return h("DE","LB","OLB");if(s.startsWith("DT"))return h("DT","NT");
+ if(s.startsWith("LB"))return h("LB","OLB","ILB","MLB");if(s.startsWith("CB"))return h("CB","DB");
+ if(s=="FS")return h("FS","SS","S","CB","DB");if(s=="SS")return h("SS","FS","S","CB","DB");
+ if(s=="K")return h("K");if(s=="P")return h("P");if(s=="KR/PR")return h("KR","PR","WR","RB","CB");
+ return false
+}
+function slotImpact(slot,p){
+ let base=p.impact,q=tok(p.pos),h=(...x)=>x.some(y=>q.includes(y));
+ // A primary return specialist keeps full value. Generic skill players can fill in, but not at full OVR.
+ if(slot==="KR/PR"&&!h("KR","PR"))return Math.max(75,Math.min(94,base-4));
+ // Generic off-ball LB at EDGE is a fallback, not a full-value edge rusher.
+ if(slot.startsWith("EDGE")&&h("LB")&&!h("OLB","DE"))return Math.max(75,base-4);
+ // Corner-to-safety is legal as an emergency DB fit, but gets a small fit penalty.
+ if((slot==="FS"||slot==="SS")&&h("CB")&&!h("FS","SS","S"))return Math.max(75,base-2);
+ return base;
+}
+function os(){return A.filter(x=>!S.ro[x])}
+function pool(){return S.d?D[S.d]:null}
+function cur(){let p=pool();return p?p.players[Number(S.p)]:null}
+function eligibleKeysForSlot(slot){
+ const used=new Set(Object.values(S.ro).map(x=>x.name));
+ const keys=Object.keys(D).filter(k=>D[k].players.some(p=>!used.has(p.name)&&ok(slot,p.pos)));
+ return keys.length?keys:Object.keys(D);
+}
+function pickKey(){let k=eligibleKeysForSlot(S.sl);return k[Math.floor(Math.random()*k.length)]}
+
+async function rollEffect(targetKey){
+ S.rolling=true;renderControls();
+ $("rollbox").classList.add("rolling");
+ const keys=Object.keys(D);
+ for(let i=0;i<12;i++){
+  const fake=D[keys[Math.floor(Math.random()*keys.length)]];
+  $("e").textContent=fake.era;
+  $("t").textContent=fake.team;
+  await sleep(45+i*4);
+ }
+ S.d=targetKey;
+ S.p=null;
+ $("e").textContent=D[targetKey].era;
+ $("t").textContent=D[targetKey].team;
+ $("rollbox").classList.remove("rolling");
+ S.rolling=false;
+ render();
+}
+
+function slots(){
+ let o=os();
+ $("s").innerHTML=o.map(x=>`<option>${x}</option>`).join("");
+ if(!S.sl||!o.includes(S.sl))S.sl=o[0]||null;
+ if(S.sl)$("s").value=S.sl;
+ let fill=(a,id)=>{
+  $(id).innerHTML=a.map(x=>{
+   let y=S.ro[x];
+   return `<button class="slot ${!y&&S.sl==x?"pick":""}" data-x="${x}">
+    <span class="pos">${x}</span><span class="sn">${y?y.name:"Open"}</span><span class="si">${y?y.impact:""}</span>
+   </button>`
+  }).join("")
+ };
+ fill(G.off,"off");fill(G.def,"def");fill(G.st,"st");
+ document.querySelectorAll(".slot").forEach(x=>x.onclick=()=>{if(S.ro[x.dataset.x])return;S.sl=x.dataset.x;render()});
+ $("oc").textContent=G.off.filter(x=>S.ro[x]).length+"/11";
+ $("dc").textContent=G.def.filter(x=>S.ro[x]).length+"/11";
+ $("sc").textContent=G.st.filter(x=>S.ro[x]).length+"/3"
+}
+
+function players(){
+ if(!S.on){$("pl").innerHTML='<div class="tiny">Start a game.</div>';$("pc").textContent="0";return}
+ if(Object.keys(S.ro).length===25){$("pl").innerHTML='<div class="tiny">Roster complete. Continue to Season Mode below.</div>';$("pc").textContent="DONE";return}
+ let used=new Set(Object.values(S.ro).map(x=>x.name)),ar=pool().players.map((x,i)=>[x,i]);
+ ar.sort((a,b)=>(ok(S.sl,b[0].pos)?1:0)-(ok(S.sl,a[0].pos)?1:0)||slotImpact(S.sl,b[0])-slotImpact(S.sl,a[0]));
+ $("pc").textContent=ar.length;
+ $("pl").innerHTML=ar.map(([x,i])=>`<button class="player ${String(S.p)==String(i)?"sel":""} ${used.has(x.name)?"used":""}" data-i="${i}" ${used.has(x.name)?"disabled":""}>
+  <span><span class="nm">${x.name}</span><span class="pm">${x.pos}${ok(S.sl,x.pos)?(slotImpact(S.sl,x)!==x.impact?" • base "+x.impact:""):" • no fit for "+S.sl}</span></span>
+  <span class="imp">${ok(S.sl,x.pos)?slotImpact(S.sl,x):x.impact}</span></button>`).join("");
+ document.querySelectorAll(".player:not(:disabled)").forEach(x=>x.onclick=()=>{S.p=x.dataset.i;render()})
+}
+
+function hist(){
+ $("h").innerHTML=S.hi.length?S.hi.map((x,i)=>`${i+1}. <b>${x.name}</b> → ${x.slot} <span style="float:right">${x.impact}</span>`).join("<br>"):"No picks yet."
+}
+
+function renderControls(){
+ $("m").disabled=S.rolling||$("m").disabled;
+ $("r").disabled=S.rolling||!S.on||Object.keys(S.ro).length===25;
+ $("u").disabled=S.rolling||!S.hi.length;
+ $("s").disabled=S.rolling||Object.keys(S.ro).length===25;
+}
+
+function rosterStrength(){
+ let x=A.reduce((s,k)=>s+S.ro[k].impact,0)/25;
+ x+=(S.ro.QB.impact-88)*.14;
+ ["LT","RT","EDGE1","EDGE2","CB1","CB2"].forEach(k=>x+=(S.ro[k].impact-86)*.03);
+ ["C","LG","RG","DT1","DT2"].forEach(k=>x+=(S.ro[k].impact-86)*.015);
+ return Math.max(62,Math.min(99,x))
+}
+
+function opponentStrength(key){
+ const groups={};
+ const posGroup=pos=>{
+  const q=tok(pos),h=(...x)=>x.some(y=>q.includes(y));
+  if(h("QB"))return "QB";if(h("RB","FB"))return "RB";if(h("KR","PR"))return "RET";
+  if(h("WR"))return "WR";if(h("TE"))return "TE";if(h("LT","RT","OT","T"))return "OT";
+  if(h("LG","RG","G","OG"))return "G";if(h("C"))return "C";if(h("DT","NT"))return "DT";
+  if(h("DE","OLB"))return "EDGE";if(h("LB","ILB","MLB"))return "LB";if(h("CB","DB"))return "CB";
+  if(h("FS","SS","S"))return "S";if(h("K"))return "K";if(h("P"))return "P";return "OTHER";
+ };
+ D[key].players.forEach(p=>{const g=posGroup(p.pos);if(g!=="RET"&&g!=="OTHER")groups[g]=Math.max(groups[g]||0,p.impact)});
+ const weights={QB:1.5,RB:1,WR:1.2,TE:.8,OT:1.1,G:.9,C:.9,EDGE:1.2,DT:1,LB:1,CB:1.1,S:1,K:.45,P:.35};
+ let sum=0,w=0;Object.entries(groups).forEach(([g,r])=>{const z=weights[g]||1;sum+=r*z;w+=z});
+ return Math.round(Math.max(72,Math.min(98,w?sum/w:84)))
+}
+
+function codeOf(key){return key.split("|")[1]}
+function leagueVersionForFranchise(code){
+ const options=Object.keys(D).filter(k=>codeOf(k)===code);
+ if(!options.length)return null;
+ return options[Math.floor(Math.random()*options.length)];
+}
+function simulateLeagueTeam(code,conf){
+ const key=leagueVersionForFranchise(code),rating=opponentStrength(key),weekly=[];
+ const targetWins=clamp(Math.round(8.5+(rating-88)*.55+bell()*1.15),3,14);
+ const flags=[...Array(targetWins).fill(true),...Array(17-targetWins).fill(false)].sort(()=>Math.random()-.5);
+ flags.forEach(win=>{
+  const neutralOpp=clamp(87.5+bell()*2.0,83,93),r=gameScore(rating,neutralOpp,{era:D[key].era});
+  let pf=r.us,pa=r.them;
+  if(win&&pf<=pa)pf=pa+3+Math.floor(Math.random()*5);
+  if(!win&&pa<=pf)pa=pf+3+Math.floor(Math.random()*5);
+  weekly.push({win,pf,pa});
+ });
+ return {user:false,code,conference:conf,key,team:D[key].team,era:D[key].era,rating,weekly,fullWins:targetWins};
+}
+function buildLeagueCandidatePool(cpuTeams){
+ const usedUser=new Set(Object.values(S.ro||{}).map(p=>p.name)),best=new Map();
+ cpuTeams.forEach(t=>D[t.key].players.forEach(p=>{
+  if(usedUser.has(p.name)||p.impact<84)return;
+  const role=awardRoleFromSlot(null,p.pos);if(role==="OTHER")return;
+  const old=best.get(p.name);
+  if(!old||p.impact>old.impact)best.set(p.name,{...p,key:t.key,leagueWins:t.fullWins});
+ }));
+ return [...best.values()].map(simulateExternalCandidate);
+}
+function buildLeagueSeason(){
+ if(!S.season)return;
+ const userConf=S.season.conference||(Math.random()<.5?"AFC":"NFC");S.season.conference=userConf;
+ const mine=[...(userConf==="AFC"?AFC:NFC)],other=[...(userConf==="AFC"?NFC:AFC)];
+ const replaced=mine[Math.floor(Math.random()*mine.length)];
+ const cpuMine=mine.filter(c=>c!==replaced).map(c=>simulateLeagueTeam(c,userConf));
+ const otherConf=oppositeConference(userConf),cpuOther=other.map(c=>simulateLeagueTeam(c,otherConf));
+ S.season.league={replacedCode:replaced,teams:{AFC:[],NFC:[]}};
+ S.season.league.teams[userConf]=[{user:true,code:"USER",conference:userConf,team:"YOUR TEAM",era:"Cross-Era Roster",rating:Math.round(rosterStrength())},...cpuMine];
+ S.season.league.teams[otherConf]=cpuOther;
+ S.season.leagueCandidates=buildLeagueCandidatePool([...cpuMine,...cpuOther]);
+}
+function ensureLeagueSeason(){
+ if(!S.season||S.season.league)return;
+ if(!S.season.conference)S.season.conference=Math.random()<.5?"AFC":"NFC";
+ buildLeagueSeason();
+}
+function leagueGamesPlayed(){
+ if(!S.season)return 0;
+ return S.season.phase==="regular"?regularPlayedGames().length:17;
+}
+function standingSnapshot(t,games=leagueGamesPlayed()){
+ if(t.user){
+  const gp=S.season.phase==="regular"?regularPlayedGames().length:17;
+  return {...t,wins:S.season.wins||0,losses:gp-(S.season.wins||0),pf:S.season.pf||0,pa:S.season.pa||0,games:gp};
+ }
+ const rows=(t.weekly||[]).slice(0,games),wins=rows.filter(x=>x.win).length;
+ return {...t,wins,losses:rows.length-wins,pf:rows.reduce((a,x)=>a+x.pf,0),pa:rows.reduce((a,x)=>a+x.pa,0),games:rows.length};
+}
+function leagueStandings(conf,games=leagueGamesPlayed()){
+ ensureLeagueSeason();
+ const rows=(S.season?.league?.teams?.[conf]||[]).map(t=>standingSnapshot(t,games));
+ rows.sort((a,b)=>b.wins-a.wins||(b.pf-b.pa)-(a.pf-a.pa)||b.pf-a.pf||b.rating-a.rating);
+ return rows.map((r,i)=>({...r,rank:i+1,playoff:i<7}));
+}
+function standingsTeamHTML(r){
+ const diff=r.pf-r.pa;
+ return `<div class="standrow ${r.user?"you":""} ${r.playoff?"playoff":""}"><span class="rank">${r.rank}${r.playoff?"*":""}</span><span class="standteam">${r.user?"YOUR TEAM":r.team}<span class="standmeta">${r.user?"Cross-Era":r.era+" • OVR "+r.rating}</span></span><b>${r.wins}</b><b>${r.losses}</b><span>${diff>0?"+":""}${diff}</span></div>`;
+}
+function standingsConferenceHTML(conf){
+ const rows=leagueStandings(conf);
+ return `<div class="standconf"><div class="standtitle">${conf} STANDINGS</div><div class="standhead"><span>#</span><span>TEAM</span><span>W</span><span>L</span><span>DIFF</span></div>${rows.map(standingsTeamHTML).join("")}</div>`;
+}
+function renderLeagueStandings(){
+ const area=$("standingsArea");if(!area||!S.season)return;
+ ensureLeagueSeason();const games=leagueGamesPlayed();
+ area.innerHTML=`<div class="leagueintro">${games}/17 regular-season games simulated. <b style="color:var(--ok)">*</b> marks the current seven-team playoff field. Your cross-era roster occupies one ${S.season.conference} league slot; final standings determine the actual seeds.</div><div class="standgrid">${standingsConferenceHTML("AFC")}${standingsConferenceHTML("NFC")}</div>`;
+}
+function scaleLeagueStats(st,f){
+ const out={...st};
+ ["passAtt","passComp","passYds","passTD","int","rushAtt","rushYds","rushTD","rec","recYds","recTD","sacks","takeaways","fgm","fga","xpm","xpa","returnTD"].forEach(k=>{if(Number.isFinite(out[k]))out[k]=Math.round(out[k]*f)});
+ return out;
+}
+function currentLeagueLeaderCandidates(){
+ const games=leagueGamesPlayed(),f=games/17;
+ const cpu=(S.season?.leagueCandidates||buildExternalAwardCandidates()).map(c=>{const x={...c,stats:scaleLeagueStats(c.stats||{},f)};x.summary=candidateSummary(x);return x});
+ return [...buildUserAwardCandidates(),...cpu];
+}
+const LEAGUE_LEADER_DEFS=[
+ {title:"Passing Yards",roles:["QB"],key:"passYds"},{title:"Passing TD",roles:["QB"],key:"passTD"},
+ {title:"Rushing Yards",roles:["QB","RB"],key:"rushYds"},{title:"Receiving Yards",roles:["WR","TE","RB"],key:"recYds"},
+ {title:"Sacks",roles:["EDGE","DT","LB","DB"],key:"sacks"},{title:"Takeaways",roles:["EDGE","DT","LB","DB"],key:"takeaways"}
+];
+function leagueLeaderboardHTML(def,candidates){
+ const ranked=candidates.filter(c=>def.roles.includes(c.role)&&Number.isFinite(c.stats?.[def.key])).sort((a,b)=>(b.stats[def.key]||0)-(a.stats[def.key]||0)||b.impact-a.impact).slice(0,5);
+ return `<div class="leaderboard"><div class="leaderboardtitle">${def.title}</div>${ranked.map((c,i)=>`<div class="leaguerow ${c.isUser?"you":""}"><span>${i+1}</span><span>${c.name}<span class="standmeta">${c.isUser?"YOUR TEAM":c.origin+" "+c.team}</span></span><span class="value">${c.stats[def.key]||0}</span></div>`).join("")}</div>`;
+}
+function renderLeagueLeaders(){
+ const area=$("leagueLeadersArea");if(!area||!S.season)return;
+ const games=leagueGamesPlayed();
+ if(!games){area.innerHTML='<div class="awardlock">No league stats yet. Play Week 1 to start the leaderboards.</div>';return}
+ const cs=currentLeagueLeaderCandidates();
+ area.innerHTML=`<div class="leagueintro">CPU totals are simulated to the same ${games}-game point; your players use their actual generated stats.</div><div class="leaderboards">${LEAGUE_LEADER_DEFS.map(d=>leagueLeaderboardHTML(d,cs)).join("")}</div>`;
+}
+function buildSchedule(){
+ const keys=Object.keys(D);
+ const shuffled=[...keys].sort(()=>Math.random()-.5);
+ const picked=[],usedCodes=new Set();
+ // First pass: distinct franchises and mixed eras.
+ for(const era of [...ERAS,...ERAS,...ERAS,...ERAS,...ERAS]){
+  const options=shuffled.filter(k=>D[k].era===era&&!usedCodes.has(codeOf(k))&&!picked.includes(k));
+  if(options.length&&picked.length<17){
+   const k=options[Math.floor(Math.random()*options.length)];
+   picked.push(k);usedCodes.add(codeOf(k));
+  }
+  if(picked.length===17)break;
+ }
+ // Fallback if needed.
+ for(const k of shuffled){
+  if(picked.length===17)break;
+  if(!picked.includes(k))picked.push(k);
+ }
+ picked.sort(()=>Math.random()-.5);
+ S.season={
+  phase:"regular",week:0,wins:0,losses:0,pf:0,pa:0,
+  schedule:picked.slice(0,17).map((k,i)=>({week:i+1,key:k,opp:D[k].team,era:D[k].era,rating:opponentStrength(k),played:false,win:null,us:null,them:null})),
+  seed:null,conference:Math.random()<.5?"AFC":"NFC",playoffs:[],finished:false,champion:false,awards:null,league:null,leagueCandidates:null,archived:false
+ };
+ buildLeagueSeason();
+ render();
+}
+
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function randInt(a,b){return Math.floor(Math.random()*(b-a+1))+a}
+function bell(){return (Math.random()+Math.random()+Math.random()+Math.random()-2)*1.55}
+function eraTempo(era){return era==="1990s"?-0.022:era==="2000s"?-0.010:era==="2010s"?0.002:0.006}
+function eraPassAdj(era){return era==="1990s"?-4:era==="2000s"?-2:era==="2010s"?0:1}
+
+function weightedAverage(values,weights){
+ let total=0,w=0;
+ values.forEach((v,i)=>{if(Number.isFinite(v)){const z=weights[i]||1;total+=v*z;w+=z}});
+ return w?total/w:85;
+}
+function rosterUnits(){
+ const offSlots=["QB","RB","WR1","WR2","WR3","TE","LT","LG","C","RG","RT"];
+ const offW=[1.8,1,1,.85,.65,.8,.8,.75,.75,.75,.8];
+ const defSlots=["EDGE1","DT1","DT2","EDGE2","LB1","LB2","LB3","CB1","CB2","FS","SS"];
+ const defW=[1.05,.85,.85,1.05,.75,.75,.75,.95,.95,.8,.8];
+ const stSlots=["K","P","KR/PR"];
+ const off=weightedAverage(offSlots.map(k=>S.ro[k]?.impact),offW);
+ const def=weightedAverage(defSlots.map(k=>S.ro[k]?.impact),defW);
+ const st=weightedAverage(stSlots.map(k=>S.ro[k]?.impact),[1,.6,.7]);
+ return {overall:rosterStrength(),off,def,st};
+}
+function bestOpponentForSlot(key,slot){
+ const list=(D[key]?.players||[]).filter(p=>ok(slot,p.pos));
+ if(!list.length)return null;
+ return [...list].sort((a,b)=>slotImpact(slot,b)-slotImpact(slot,a))[0];
+}
+function opponentUnits(key){
+ const offSlots=["QB","RB","WR1","WR2","WR3","TE","LT","LG","C","RG","RT"];
+ const offW=[1.8,1,1,.85,.65,.8,.8,.75,.75,.75,.8];
+ const defSlots=["EDGE1","DT1","DT2","EDGE2","LB1","LB2","LB3","CB1","CB2","FS","SS"];
+ const defW=[1.05,.85,.85,1.05,.75,.75,.75,.95,.95,.8,.8];
+ const stSlots=["K","P","KR/PR"];
+ const slotRating=k=>{const p=bestOpponentForSlot(key,k);return p?slotImpact(k,p):opponentStrength(key)};
+ return {overall:opponentStrength(key),off:weightedAverage(offSlots.map(slotRating),offW),def:weightedAverage(defSlots.map(slotRating),defW),st:weightedAverage(stSlots.map(slotRating),[1,.6,.7])};
+}
+function boostUnits(u,n){return {overall:u.overall+n,off:u.off+n,def:u.def+n,st:u.st+n}}
+function blankExtra(){return {points:0,defTD:0,safety:0,xpm:0,xpa:0,twoMade:0,twoAtt:0}}
+function blankScoring(){return {points:0,passTD:0,rushTD:0,fgm:0,fga:0,xpm:0,xpa:0,twoMade:0,twoAtt:0,ints:0,fumbles:0,drives:0,give:blankExtra()}}
+function addTouchdown(target,kind){
+ target.points+=6;
+ if(kind==="pass")target.passTD=(target.passTD||0)+1;
+ if(kind==="rush")target.rushTD=(target.rushTD||0)+1;
+ if(kind==="def")target.defTD=(target.defTD||0)+1;
+ const r=Math.random();
+ if(r<.04){target.xpa=(target.xpa||0)+1}
+ else if(r<.09){target.twoAtt=(target.twoAtt||0)+1;target.twoMade=(target.twoMade||0)+1;target.points+=2}
+ else if(r<.13){target.twoAtt=(target.twoAtt||0)+1}
+ else{target.xpa=(target.xpa||0)+1;target.xpm=(target.xpm||0)+1;target.points+=1}
+}
+function passingShare(off){return clamp(.60+(off-88)*.004,.48,.72)}
+function simulateOffense(off,def,st,era){
+ const x=blankScoring(),adv=off-def;
+ const possessions=clamp(11+randInt(-1,2)+(Math.random()<.25?1:0),9,14);
+ const tdP=clamp(.202+eraTempo(era)+adv*.0062,.095,.37);
+ const fgP=clamp(.172+adv*.0022,.095,.25),fgMake=clamp(.855+(st-88)*.006,.70,.95);
+ const toP=clamp(.118-adv*.0031,.045,.205);
+ for(let i=0;i<possessions;i++){
+  x.drives++;
+  const r=Math.random();
+  if(r<tdP)addTouchdown(x,Math.random()<passingShare(off)?"pass":"rush");
+  else if(r<tdP+fgP){x.fga++;if(Math.random()<fgMake){x.fgm++;x.points+=3}}
+  else if(r<tdP+fgP+toP){
+   if(Math.random()<.64)x.ints++;else x.fumbles++;
+   if(Math.random()<.058)addTouchdown(x.give,"def");
+  }else{
+   if(Math.random()<.0022){x.give.safety++;x.give.points+=2}
+  }
+ }
+ return x;
+}
+function simulateSpecialTeams(st){
+ const x=blankExtra(),p=clamp(.024+(st-88)*.0015,.008,.055);
+ if(Math.random()<p)addTouchdown(x,"def");
+ return x;
+}
+function mergeKicking(a,b,c){return {fgm:a.fgm||0,fga:a.fga||0,xpm:(a.xpm||0)+(b.xpm||0)+(c.xpm||0),xpa:(a.xpa||0)+(b.xpa||0)+(c.xpa||0),twoMade:(a.twoMade||0)+(b.twoMade||0)+(c.twoMade||0),twoAtt:(a.twoAtt||0)+(b.twoAtt||0)+(c.twoAtt||0)}}
+function gameScore(teamStr,oppStr,meta={}){
+ const usU=meta.usUnits||{overall:teamStr,off:teamStr,def:teamStr,st:teamStr};
+ const themU=meta.themUnits||{overall:oppStr,off:oppStr,def:oppStr,st:oppStr};
+ const era=meta.era||"2020s";
+ const usOff=simulateOffense(usU.off,themU.def,usU.st,era),themOff=simulateOffense(themU.off,usU.def,themU.st,era);
+ const usST=simulateSpecialTeams(usU.st),themST=simulateSpecialTeams(themU.st);
+ let us=usOff.points+themOff.give.points+usST.points,them=themOff.points+usOff.give.points+themST.points,ot=null;
+ if(us===them){
+  const p=1/(1+Math.exp(-(teamStr-oppStr)/7.5));
+  if(Math.random()<p){us+=3;usOff.fgm++;usOff.fga++;ot="us"}else{them+=3;themOff.fgm++;themOff.fga++;ot="them"}
+ }
+ return {win:us>them,us,them,detail:{us:{off:usOff,defFromOpp:themOff.give,st:usST,kick:mergeKicking(usOff,themOff.give,usST)},them:{off:themOff,defFromOpp:usOff.give,st:themST,kick:mergeKicking(themOff,usOff.give,themST)},ot}};
+}
+function userPersonnel(){return {qb:S.ro.QB,rb:S.ro.RB,k:S.ro.K,p:S.ro.P,returner:S.ro["KR/PR"],receivers:[S.ro.WR1,S.ro.WR2,S.ro.WR3,S.ro.TE,S.ro.RB].filter(Boolean)}}
+function opponentPersonnel(key){
+ const players=D[key]?.players||[],best=(slot,exclude=new Set())=>[...players].filter(p=>ok(slot,p.pos)&&!exclude.has(p.name)).sort((a,b)=>slotImpact(slot,b)-slotImpact(slot,a))[0]||null;
+ const used=new Set(),qb=best("QB");if(qb)used.add(qb.name);const rb=best("RB",used);if(rb)used.add(rb.name);
+ const rec=[];["WR1","WR2","WR3","TE","RB"].forEach(slot=>{const p=best(slot,used);if(p){rec.push(p);used.add(p.name)}});
+ return {qb,rb,k:best("K"),p:best("P"),returner:best("KR/PR"),receivers:rec};
+}
+function distribute(total,weights){
+ if(!weights.length)return [];
+ const safe=weights.map(x=>Math.max(.01,x)),sum=safe.reduce((a,b)=>a+b,0),raw=safe.map(x=>total*x/sum),out=raw.map(Math.floor);
+ let left=total-out.reduce((a,b)=>a+b,0);const order=raw.map((x,i)=>[x-Math.floor(x)+Math.random()*.15,i]).sort((a,b)=>b[0]-a[0]);
+ for(let i=0;i<left;i++)out[order[i%order.length][1]]++;
+ return out;
+}
+function sideStatLine(personnel,events,oppEvents,units,oppUnits,ownScore,oppScore,era){
+ const qb=personnel.qb||{name:"Quarterback",impact:84},rb=personnel.rb||{name:"Running Back",impact:84},recs=personnel.receivers.length?personnel.receivers:[{name:"Top Receiver",impact:84}],k=personnel.k||{name:"Kicker",impact:84},ret=personnel.returner||{name:"Returner",impact:84};
+ const script=(oppScore-ownScore)*.15,att=clamp(Math.round(33+eraPassAdj(era)+script+bell()*3.2),18,54);
+ const cmpPct=clamp(.635+(qb.impact-88)*.0032-(oppUnits.def-88)*.0015+bell()*.018,.48,.79),comp=clamp(Math.round(att*cmpPct),Math.min(8,att),att);
+ const ypa=clamp(7.05+(qb.impact-88)*.045+(units.off-oppUnits.def)*.025+bell()*.35,4.7,10.8),passYds=clamp(Math.round(att*ypa),70,520);
+ const rushAtt=clamp(Math.round(27+(ownScore-oppScore)*.13-bell()*2.4),13,43),ypc=clamp(4.18+(rb.impact-88)*.035+(units.off-oppUnits.def)*.022+bell()*.28,2.5,6.8),rushYds=clamp(Math.round(rushAtt*ypc),35,285);
+ const weights=recs.map((p,i)=>(p.impact||84)*(i===0?1.22:i===1?1.05:i===3?.9:.82)*(0.9+Math.random()*.22)),catches=distribute(comp,weights),yardWeights=weights.map((w,i)=>w*(i<3?1.15:.86)*(0.82+Math.random()*.35)),yards=distribute(passYds,yardWeights),tdAlloc=distribute(events.off.passTD,weights.map(w=>w*(.8+Math.random()*.45)));
+ const receivers=recs.map((p,i)=>({name:p.name,rec:catches[i]||0,yds:yards[i]||0,td:tdAlloc[i]||0})).sort((a,b)=>b.yds-a.yds).slice(0,2);
+ const sacks=clamp(Math.round(2.35+(units.def-oppUnits.off)*.11+bell()*1.05),0,8),takeaways=oppEvents.off.ints+oppEvents.off.fumbles;
+ return {qb:{name:qb.name,comp,att,yds:passYds,td:events.off.passTD,int:events.off.ints},rush:{name:rb.name,att:rushAtt,yds:rushYds,td:events.off.rushTD},receivers,def:{sacks,takeaways,td:events.defFromOpp.defTD||0,safeties:events.defFromOpp.safety||0},kick:{name:k.name,fgm:events.kick.fgm,fga:events.kick.fga,xpm:events.kick.xpm,xpa:events.kick.xpa,twoMade:events.kick.twoMade,twoAtt:events.kick.twoAtt},ret:{name:ret.name,td:events.st.defTD||0},totalYds:passYds+rushYds};
+}
+function buildGameStats(key,r,usUnits,themUnits,era){return {us:sideStatLine(userPersonnel(),r.detail.us,r.detail.them,usUnits,themUnits,r.us,r.them,era),them:sideStatLine(opponentPersonnel(key),r.detail.them,r.detail.us,themUnits,usUnits,r.them,r.us,era)}}
+function statSideHTML(title,s){
+ const rec=s.receivers.map(x=>`<b>${x.name}</b> ${x.rec} REC, ${x.yds} YDS${x.td?`, ${x.td} TD`:""}`).join(" • "),ret=s.ret?.td?` • <b>${s.ret.name}</b> ${s.ret.td} RET TD`:"",two=s.kick.twoAtt?` • 2PT ${s.kick.twoMade}/${s.kick.twoAtt}`:"",dtd=s.def.td?` • ${s.def.td} DEF TD`:"",saf=s.def.safeties?` • ${s.def.safeties} SFTY`:"";
+ return `<div class="boxside"><div class="boxteam">${title} • ${s.totalYds} TOTAL YDS</div><div class="statline"><span class="statlabel">PASS</span> <b>${s.qb.name}</b> ${s.qb.comp}/${s.qb.att}, ${s.qb.yds} YDS, ${s.qb.td} TD, ${s.qb.int} INT</div><div class="statline"><span class="statlabel">RUSH</span> <b>${s.rush.name}</b> ${s.rush.att} CAR, ${s.rush.yds} YDS${s.rush.td?`, ${s.rush.td} TD`:""}</div><div class="statline"><span class="statlabel">REC</span> ${rec}</div><div class="statline"><span class="statlabel">DEF</span> ${s.def.sacks} SACKS • ${s.def.takeaways} TAKEAWAYS${dtd}${saf}${ret}</div><div class="statline"><span class="statlabel">KICK</span> <b>${s.kick.name}</b> FG ${s.kick.fgm}/${s.kick.fga} • XP ${s.kick.xpm}/${s.kick.xpa}${two}</div></div>`;
+}
+function boxScoreHTML(g,open=false){if(!g?.played||!g.stats)return "";return `<details class="boxscore" ${open?"open":""}><summary>Game Stat Lines</summary><div class="boxgrid">${statSideHTML("YOUR TEAM",g.stats.us)}${statSideHTML(`${g.era} ${g.opp}`,g.stats.them)}</div></details>`}
+
+
+function awardRoleFromSlot(slot,pos){
+ if(slot==="QB")return "QB";if(slot==="RB")return "RB";if(slot&&slot.startsWith("WR"))return "WR";if(slot==="TE")return "TE";
+ if(["LT","LG","C","RG","RT"].includes(slot))return "OL";if(slot&&slot.startsWith("EDGE"))return "EDGE";if(slot&&slot.startsWith("DT"))return "DT";
+ if(slot&&slot.startsWith("LB"))return "LB";if(["CB1","CB2","FS","SS"].includes(slot))return "DB";if(slot==="K")return "K";if(slot==="P")return "P";if(slot==="KR/PR")return "RET";
+ const q=tok(pos),h=(...x)=>x.some(y=>q.includes(y));
+ if(h("QB"))return "QB";if(h("RB","FB"))return "RB";if(h("WR"))return "WR";if(h("TE"))return "TE";if(h("LT","RT","OT","T","LG","RG","G","OG","C"))return "OL";
+ if(h("DE","OLB"))return "EDGE";if(h("DT","NT"))return "DT";if(h("LB","ILB","MLB"))return "LB";if(h("CB","DB","FS","SS","S"))return "DB";
+ if(h("K"))return "K";if(h("P"))return "P";if(h("KR","PR"))return "RET";return "OTHER";
+}
+function blankPlayerTotals(){return {games:0,passComp:0,passAtt:0,passYds:0,passTD:0,int:0,rushAtt:0,rushYds:0,rushTD:0,rec:0,recYds:0,recTD:0,fgm:0,fga:0,xpm:0,xpa:0,sacks:0,takeaways:0,returnTD:0}}
+function regularPlayedGames(){return (S.season?.schedule||[]).filter(g=>g.played&&g.stats?.us)}
+function distributeStable(total,weights){
+ const safe=weights.map(x=>Math.max(.01,x)),sum=safe.reduce((a,b)=>a+b,0),raw=safe.map(x=>total*x/sum),out=raw.map(Math.floor);
+ let left=total-out.reduce((a,b)=>a+b,0);const order=raw.map((x,i)=>[x-Math.floor(x),i]).sort((a,b)=>b[0]-a[0]||a[1]-b[1]);
+ for(let i=0;i<left;i++)out[order[i%order.length][1]]++;return out;
+}
+function userSeasonTotals(){
+ const totals={};Object.values(S.ro||{}).forEach(p=>totals[p.name]=blankPlayerTotals());
+ const games=regularPlayedGames();
+ games.forEach(g=>{
+  const z=g.stats.us;
+  if(z.qb&&totals[z.qb.name]){let t=totals[z.qb.name];t.games++;t.passComp+=z.qb.comp;t.passAtt+=z.qb.att;t.passYds+=z.qb.yds;t.passTD+=z.qb.td;t.int+=z.qb.int}
+  if(z.rush&&totals[z.rush.name]){let t=totals[z.rush.name];t.games=Math.max(t.games,1);t.rushAtt+=z.rush.att;t.rushYds+=z.rush.yds;t.rushTD+=z.rush.td}
+  (z.receivers||[]).forEach(r=>{if(totals[r.name]){let t=totals[r.name];t.games=Math.max(t.games,1);t.rec+=r.rec;t.recYds+=r.yds;t.recTD+=r.td}});
+  if(z.kick&&totals[z.kick.name]){let t=totals[z.kick.name];t.games=Math.max(t.games,1);t.fgm+=z.kick.fgm;t.fga+=z.kick.fga;t.xpm+=z.kick.xpm;t.xpa+=z.kick.xpa}
+  if(z.ret&&totals[z.ret.name]){let t=totals[z.ret.name];t.games=Math.max(t.games,1);t.returnTD+=z.ret.td||0}
+ });
+ // Allocate team defensive production over the actual defensive starters for awards.
+ const sacks=games.reduce((a,g)=>a+(g.stats.us.def?.sacks||0),0),takeaways=games.reduce((a,g)=>a+(g.stats.us.def?.takeaways||0),0);
+ const defenders=G.def.map(slot=>S.ro[slot]).filter(Boolean);
+ if(defenders.length){
+  const sw=defenders.map(p=>{const role=awardRoleFromSlot(p.slot,p.pos);return (p.impact||84)*(role==="EDGE"?2.2:role==="DT"?1.35:role==="LB"?.9:.32)});
+  const tw=defenders.map(p=>{const role=awardRoleFromSlot(p.slot,p.pos);return (p.impact||84)*(role==="DB"?2.0:role==="LB"?1.15:role==="EDGE"?.55:.25)});
+  const sa=distributeStable(sacks,sw),ta=distributeStable(takeaways,tw);
+  defenders.forEach((p,i)=>{const t=totals[p.name]||(totals[p.name]=blankPlayerTotals());t.games=games.length;t.sacks=sa[i]||0;t.takeaways=ta[i]||0});
+ }
+ const ret=S.ro["KR/PR"];if(ret&&totals[ret.name])totals[ret.name].games=games.length
+ return totals;
+}
+function candidateSummary(c){
+ const s=c.stats||{};
+ if(c.role==="QB")return `${s.passYds||0} PASS YDS • ${s.passTD||0} TD • ${s.int||0} INT`;
+ if(c.role==="RB")return `${s.rushYds||0} RUSH YDS • ${s.rushTD||0} TD${s.recYds?` • ${s.recYds} REC YDS`:""}`;
+ if(c.role==="WR"||c.role==="TE")return `${s.rec||0} REC • ${s.recYds||0} YDS • ${s.recTD||0} TD`;
+ if(c.role==="EDGE"||c.role==="DT"||c.role==="LB"||c.role==="DB")return `${s.sacks||0} SACKS • ${s.takeaways||0} TAKEAWAYS`;
+ if(c.role==="K")return `${s.fgm||0}/${s.fga||0} FG • ${s.xpm||0}/${s.xpa||0} XP`;
+ if(c.role==="P")return `${s.puntAvg||47} PUNT AVG • OVR ${c.impact}`;
+ if(c.role==="RET")return `${s.returnTD||0} RETURN TD • OVR ${c.impact}`;
+ if(c.role==="OL")return `OVR ${c.impact} • TEAM ${c.wins}-${17-c.wins}`;
+ return `OVR ${c.impact}`;
+}
+function buildUserAwardCandidates(){
+ const totals=userSeasonTotals(),wins=S.season?.wins||0,games=regularPlayedGames().length;
+ return Object.entries(S.ro||{}).map(([slot,p])=>{
+  const role=awardRoleFromSlot(slot,p.pos),stats=totals[p.name]||blankPlayerTotals();
+  stats.games=Math.max(stats.games,games);
+  return {id:`U|${slot}|${p.name}`,name:p.name,pos:slot,role,impact:p.impact||84,team:"YOUR TEAM",origin:`${p.era} ${p.team}`,isUser:true,wins,stats,summary:""};
+ }).map(c=>(c.summary=candidateSummary(c),c));
+}
+function mobileQB(name){return ["Lamar Jackson","Josh Allen","Michael Vick","Cam Newton","Randall Cunningham","Steve Young","Jalen Hurts","Kyler Murray"].includes(name)}
+function simulateExternalCandidate(e){
+ const role=awardRoleFromSlot(null,e.pos),impact=e.impact,wins=Number.isFinite(e.leagueWins)?e.leagueWins:clamp(Math.round(8.4+(opponentStrength(e.key)-88)*.48+(impact-88)*.07+bell()*1.7),3,15),st=blankPlayerTotals();st.games=17;
+ if(role==="QB"){
+  st.passYds=clamp(Math.round(3850+(impact-88)*82+bell()*310),2700,5500);st.passTD=clamp(Math.round(27+(impact-88)*1.0+bell()*3.7),14,53);st.int=clamp(Math.round(12-(impact-88)*.42+bell()*2),3,22);st.passAtt=clamp(Math.round(545+(impact-88)*2+bell()*28),430,690);st.passComp=clamp(Math.round(st.passAtt*(.64+(impact-88)*.003+bell()*.012)),Math.round(st.passAtt*.5),Math.round(st.passAtt*.78));
+  if(mobileQB(e.name)){st.rushYds=clamp(Math.round(520+(impact-88)*30+bell()*120),180,1100);st.rushTD=clamp(Math.round(5+(impact-88)*.35+bell()*1.5),1,14)}
+ }else if(role==="RB"){
+  st.rushAtt=clamp(Math.round(245+(impact-88)*5+bell()*24),150,360);st.rushYds=clamp(Math.round(1050+(impact-88)*55+bell()*180),650,1900);st.rushTD=clamp(Math.round(8+(impact-88)*.55+bell()*2),3,20);st.recYds=clamp(Math.round(280+(impact-88)*24+bell()*90),80,850);st.rec=clamp(Math.round(st.recYds/8.6),15,95);st.recTD=clamp(Math.round(2+(impact-88)*.2+bell()),0,8);
+ }else if(role==="WR"||role==="TE"){
+  const te=role==="TE";st.rec=clamp(Math.round((te?66:76)+(impact-88)*2.2+bell()*7),35,135);st.recYds=clamp(Math.round((te?780:980)+(impact-88)*(te?48:62)+bell()*150),450,1950);st.recTD=clamp(Math.round((te?6:7)+(impact-88)*.48+bell()*1.8),2,20);
+ }else if(["EDGE","DT","LB","DB"].includes(role)){
+  const sackBase=role==="EDGE"?8.8:role==="DT"?5.8:role==="LB"?4.2:1.2,taBase=role==="DB"?3.5:role==="LB"?2.3:role==="EDGE"?1.5:.9;
+  st.sacks=clamp(Math.round(sackBase+(impact-88)*(role==="EDGE"?.62:.38)+bell()*1.6),0,23);st.takeaways=clamp(Math.round(taBase+(impact-88)*.22+bell()*1.1),0,10);
+ }else if(role==="K"){
+  st.fga=clamp(Math.round(31+bell()*3),21,42);const pct=clamp(.86+(impact-88)*.006+bell()*.012,.72,.96);st.fgm=Math.round(st.fga*pct);st.xpa=clamp(Math.round(35+(opponentStrength(e.key)-88)*1.2+bell()*5),20,55);st.xpm=Math.round(st.xpa*clamp(.95+(impact-88)*.002,.88,.99));
+ }else if(role==="P")st.puntAvg=Number(clamp(46.8+(impact-88)*.18+bell()*.55,43.5,52.5).toFixed(1));
+ else if(role==="RET")st.returnTD=clamp(Math.round(.7+(impact-88)*.12+bell()*.45),0,4);
+ const c={id:`L|${e.key}|${e.name}`,name:e.name,pos:e.pos,role,impact,key:e.key,team:D[e.key].team,origin:D[e.key].era,isUser:false,wins,stats:st,summary:""};c.summary=candidateSummary(c);return c;
+}
+function buildExternalAwardCandidates(){
+ if(Array.isArray(S.season?.leagueCandidates)&&S.season.leagueCandidates.length)return S.season.leagueCandidates;
+ const used=new Set(Object.values(S.ro||{}).map(p=>p.name)),best=new Map();
+ Object.entries(D).forEach(([key,d])=>d.players.forEach(p=>{
+  if(used.has(p.name)||p.impact<84)return;const role=awardRoleFromSlot(null,p.pos);if(role==="OTHER")return;
+  const old=best.get(p.name);if(!old||p.impact>old.impact)best.set(p.name,{...p,key});
+ }));
+ return [...best.values()].map(simulateExternalCandidate);
+}
+function awardScore(c,type){
+ const s=c.stats||{},w=c.wins||0,i=c.impact||84;
+ if(type==="mvp"){
+  if(c.role==="QB")return (s.passYds||0)/95+(s.passTD||0)*1.65-(s.int||0)*1.25+(s.rushYds||0)/120+(s.rushTD||0)*1.25+w*2.8+i*.16;
+  if(c.role==="RB")return (s.rushYds||0)/42+(s.rushTD||0)*2.4+(s.recYds||0)/90+(s.recTD||0)*1.6+w*1.65+i*.15;
+  if(c.role==="WR"||c.role==="TE")return (s.recYds||0)/40+(s.recTD||0)*2.5+(s.rec||0)/12+w*1.55+i*.15;
+  return -999;
+ }
+ if(type==="opoy"){
+  if(c.role==="QB")return (s.passYds||0)/105+(s.passTD||0)*1.45-(s.int||0)*.85+(s.rushYds||0)/135+(s.rushTD||0)*1.4+i*.2;
+  if(c.role==="RB")return (s.rushYds||0)/37+(s.rushTD||0)*2.55+(s.recYds||0)/75+(s.recTD||0)*1.7+i*.2;
+  if(c.role==="WR"||c.role==="TE")return (s.recYds||0)/34+(s.recTD||0)*2.7+(s.rec||0)/9+i*.2;
+  return -999;
+ }
+ if(type==="dpoy")return ["EDGE","DT","LB","DB"].includes(c.role)?(s.sacks||0)*4.15+(s.takeaways||0)*6.2+i*.72+w*1.15:-999;
+ if(type==="qboy")return c.role==="QB"?(s.passYds||0)/92+(s.passTD||0)*1.55-(s.int||0)*1.0+(s.rushYds||0)/150+(s.rushTD||0)*1.2+w*1.45+i*.22:-999;
+ if(type==="rboy")return c.role==="RB"?(s.rushYds||0)/35+(s.rushTD||0)*2.65+(s.recYds||0)/72+(s.recTD||0)*1.6+i*.28:-999;
+ if(type==="recoy")return (c.role==="WR"||c.role==="TE")?(s.recYds||0)/32+(s.recTD||0)*2.8+(s.rec||0)/8.5+i*.27:-999;
+ if(type==="proy")return ["EDGE","DT","LB"].includes(c.role)?(s.sacks||0)*4.55+(s.takeaways||0)*4.2+i*.78+w*.9:-999;
+ if(type==="oloy")return c.role==="OL"?i*1.75+w*2.1+(c.isUser?(S.season?.pf||0)/38:(opponentStrength(c.key)-84)*1.4):-999;
+ if(type==="dboy")return c.role==="DB"?(s.takeaways||0)*7.4+(s.sacks||0)*2.3+i*.9+w*1.15:-999;
+ if(type==="stoy"){
+  if(c.role==="K")return (s.fgm||0)*1.5+((s.fga||0)?(s.fgm/s.fga)*18:0)+(s.xpm||0)*.18+i*.45;
+  if(c.role==="P")return (s.puntAvg||45)*1.8+i*.65;
+  if(c.role==="RET")return (s.returnTD||0)*12+i*.85;
+  return -999;
+ }
+ return -999;
+}
+const AWARD_DEFS=[
+ {id:"mvp",title:"Most Valuable Player"},{id:"opoy",title:"Offensive Player of the Year"},{id:"dpoy",title:"Defensive Player of the Year"},
+ {id:"qboy",title:"Quarterback of the Year"},{id:"rboy",title:"Running Back of the Year"},{id:"recoy",title:"Receiver of the Year"},
+ {id:"oloy",title:"Offensive Lineman of the Year"},{id:"proy",title:"Pass Rusher of the Year"},{id:"dboy",title:"Defensive Back of the Year"},{id:"stoy",title:"Special Teams Player of the Year"}
+];
+function compactAwardCandidate(c,score){return {id:c.id,name:c.name,pos:c.pos,role:c.role,impact:c.impact,team:c.team,origin:c.origin,isUser:c.isUser,wins:c.wins,stats:c.stats,summary:c.summary,score:Number(score.toFixed(2))}}
+function finalizeSeasonAwards(){
+ if(!S.season||S.season.awards?.finalized||regularPlayedGames().length<17)return;
+ const candidates=[...buildUserAwardCandidates(),...buildExternalAwardCandidates()];
+ const categories=AWARD_DEFS.map(def=>{
+  const ranked=candidates.map(c=>[c,awardScore(c,def.id)+bell()*1.25]).filter(x=>x[1]>-900).sort((a,b)=>b[1]-a[1]);
+  const top=ranked.slice(0,3).map(([c,score])=>compactAwardCandidate(c,score));
+  const winner=top[0]?.id||null;const finalists=[...top].sort(()=>Math.random()-.5);
+  return {id:def.id,title:def.title,winner,finalists};
+ });
+ S.season.awards={finalized:true,categories};save();
+}
+function leaderHTML(label,c){return c?`<div class="leader"><b>${c.name}</b><span>${label} • ${c.summary}</span></div>`:""}
+function currentTeamLeadersHTML(){
+ const cs=buildUserAwardCandidates(),pick=role=>cs.filter(c=>role.includes(c.role)).sort((a,b)=>awardScore(b,role==="QB"?"mvp":role==="DEF"?"dpoy":"opoy")-awardScore(a,role==="QB"?"mvp":role==="DEF"?"dpoy":"opoy"))[0];
+ const qb=cs.find(c=>c.role==="QB"),rb=cs.find(c=>c.role==="RB"),rec=cs.filter(c=>["WR","TE"].includes(c.role)).sort((a,b)=>(b.stats.recYds||0)-(a.stats.recYds||0))[0],def=cs.filter(c=>["EDGE","DT","LB","DB"].includes(c.role)).sort((a,b)=>awardScore(b,"dpoy")-awardScore(a,"dpoy"))[0];
+ return `<div class="leadergrid">${leaderHTML("PASSING",qb)}${leaderHTML("RUSHING",rb)}${leaderHTML("RECEIVING",rec)}${leaderHTML("DEFENSE",def)}</div>`;
+}
+function finalistHTML(c,winner,reveal){
+ const tag=reveal&&winner?"🏆 WINNER":c.isUser?"YOUR PLAYER":"FINALIST";
+ return `<div class="finalist ${c.isUser?"you":""} ${reveal&&winner?"winner":""}"><span class="awardtag">${tag}</span><div class="finalistname">${c.name} <span class="tiny">${c.pos}</span></div><div class="finalistmeta">${c.isUser?`YOUR TEAM • ${c.origin}`:`${c.origin} ${c.team}`} • OVR ${c.impact} • ${c.wins}-${17-c.wins}</div><div class="finaliststats">${c.summary}</div></div>`;
+}
+function renderAwards(){
+ const area=$("awardsArea"),details=$("awardsDetails");if(!area||!details||!S.season)return;
+ const games=regularPlayedGames().length;details.style.display="block";
+ if(games<17){area.innerHTML=`<div class="awardsintro">Awards are based on the 17-game regular season. Playoff stats do not affect voting.</div>${games?currentTeamLeadersHTML():""}<div class="awardlock"><b>${games}/17 games complete.</b> Finalists lock after Week 17.</div>`;return}
+ if(!S.season.awards?.finalized)finalizeSeasonAwards();
+ const reveal=S.season.phase==="done"||!S.season.seed;
+ const intro=reveal?"Voting is complete. Winners and the other two finalists are shown below.":"Regular-season voting is complete. Three finalists are locked for each award. Winners reveal when your season ends.";
+ area.innerHTML=`<div class="awardsintro">${intro}</div>${currentTeamLeadersHTML()}<div class="awardgrid">${(S.season.awards?.categories||[]).map(cat=>`<div class="awardcard"><div class="awardtitle">${cat.title}</div>${cat.finalists.map(c=>finalistHTML(c,c.id===cat.winner,reveal)).join("")}</div>`).join("")}</div>`;
+}
+
+function playNext(){
+ if(!S.season||S.season.phase!=="regular")return;
+ const g=S.season.schedule.find(x=>!x.played);
+ if(!g)return;
+ const usU=rosterUnits(),themU=opponentUnits(g.key);
+ const r=gameScore(usU.overall,themU.overall,{usUnits:usU,themUnits:themU,era:g.era});
+ g.played=true;g.win=r.win;g.us=r.us;g.them=r.them;g.stats=buildGameStats(g.key,r,usU,themU,g.era);
+ S.season.week=g.week;
+ S.season.pf+=r.us;S.season.pa+=r.them;
+ if(r.win)S.season.wins++;else S.season.losses++;
+ if(!S.season.schedule.some(x=>!x.played))finishRegular();
+ render();
+}
+
+function playRest(){
+ while(S.season&&S.season.phase==="regular"&&S.season.schedule.some(x=>!x.played)){
+  const g=S.season.schedule.find(x=>!x.played);
+  const usU=rosterUnits(),themU=opponentUnits(g.key);
+  const r=gameScore(usU.overall,themU.overall,{usUnits:usU,themUnits:themU,era:g.era});
+  g.played=true;g.win=r.win;g.us=r.us;g.them=r.them;g.stats=buildGameStats(g.key,r,usU,themU,g.era);
+  S.season.week=g.week;S.season.pf+=r.us;S.season.pa+=r.them;
+  if(r.win)S.season.wins++;else S.season.losses++;
+ }
+ if(S.season&&S.season.phase==="regular")finishRegular();
+ render();
+}
+
+function leagueParticipantName(t){return t?(t.user?"YOUR TEAM":`${t.era} ${t.opp||t.team}`):"TBD";}
+function simulateLeagueSuperBowl(a,b){
+ if(!a||!b)return null;
+ const r=gameScore(a.rating,b.rating,{era:a.era||b.era||"2020s"});
+ const winner=r.win?a:b;
+ return {a,b,scoreA:r.us,scoreB:r.them,winner};
+}
+function simulateRemainingLeaguePostseason(){
+ ensureLeagueSeason();
+ if(!S.season.bracket){
+  S.season.bracket={AFC:buildConferenceField("AFC",null),NFC:buildConferenceField("NFC",null)};
+ }
+ simulateConferenceToChampion(S.season.bracket.AFC);
+ simulateConferenceToChampion(S.season.bracket.NFC);
+ const afc=S.season.bracket.AFC.champion,nfc=S.season.bracket.NFC.champion;
+ if(!afc||!nfc||afc.user||nfc.user)return;
+ S.season.leagueSuperBowl=simulateLeagueSuperBowl(afc,nfc);
+ S.season.leagueChampion=S.season.leagueSuperBowl?.winner||null;
+}
+function leagueChampionName(){return leagueParticipantName(S.season?.leagueChampion);}
+
+function finishRegular(){
+ S.season.phase="postseason";ensureLeagueSeason();
+ const me=leagueStandings(S.season.conference,17).find(x=>x.user);
+ S.season.seed=me&&me.rank<=7?me.rank:null;
+ S.season.bracket=null;
+ finalizeSeasonAwards();
+ if(!S.season.seed){S.season.finished=true;simulateRemainingLeaguePostseason();archiveSeason();}
+}
+
+function playoffRounds(){
+ if(!S.season.seed)return [];
+ return S.season.seed===1?["Divisional Round","Conference Championship","Super Bowl"]:["Wild Card","Divisional Round","Conference Championship","Super Bowl"]
+}
+
+function participantName(t){
+ if(!t)return "TBD";
+ return t.user?"YOUR TEAM":`${t.era} ${t.opp}`;
+}
+
+function playoffVersionForFranchise(code){
+ const regularKeys=new Set((S.season?.schedule||[]).map(g=>g.key));
+ let options=Object.keys(D).filter(k=>codeOf(k)===code);
+ const fresh=options.filter(k=>!regularKeys.has(k));
+ if(fresh.length)options=fresh;
+ options.sort((a,b)=>opponentStrength(b)-opponentStrength(a));
+ // Use one of the franchise's best historical versions so a playoff berth
+ // feels earned, while still preserving the random cross-era identity.
+ const top=options.slice(0,Math.min(3,options.length));
+ return top[Math.floor(Math.random()*top.length)]||options[0];
+}
+
+function buildConferenceField(conf,userSeed=null){
+ if(S.season?.league){
+  const entrants=leagueStandings(conf,17).slice(0,7).map((row,i)=>{
+   const seed=i+1;
+   if(row.user)return {seed,user:true,key:null,franchise:"USER",conference:conf,opp:"YOUR TEAM",era:"Cross-Era Roster",rating:Math.round(rosterStrength())};
+   return {seed,user:false,key:row.key,franchise:row.code,conference:conf,opp:row.team,era:row.era,rating:row.rating};
+  });
+  return {conference:conf,teams:entrants,rounds:{wildCard:[],divisional:[],championship:[]},champion:null};
+ }
+ const codes=[...(conf==="AFC"?AFC:NFC)].sort(()=>Math.random()-.5);
+ const needed=userSeed?6:7;
+ const entrants=codes.slice(0,needed).map(code=>{
+   const key=playoffVersionForFranchise(code);
+   return {seed:null,user:false,key,franchise:code,conference:conf,opp:D[key].team,era:D[key].era,rating:opponentStrength(key),sortScore:opponentStrength(key)+Math.random()*4};
+ });
+ entrants.sort((a,b)=>b.sortScore-a.sortScore);
+ const openSeeds=[1,2,3,4,5,6,7].filter(s=>s!==userSeed);
+ entrants.forEach((t,i)=>{t.seed=openSeeds[i];delete t.sortScore});
+ if(userSeed)entrants.push({seed:userSeed,user:true,key:null,franchise:"USER",conference:conf,opp:"YOUR TEAM",era:"Cross-Era Roster",rating:Math.round(rosterStrength())});
+ return {conference:conf,teams:entrants.sort((a,b)=>a.seed-b.seed),rounds:{wildCard:[],divisional:[],championship:[]},champion:null};
+}
+
+function teamBySeed(field,seed){return field.teams.find(t=>t.seed===seed)}
+function userParticipant(field){return field.teams.find(t=>t.user)}
+
+function makeBracketMatch(field,roundKey,a,b){
+ const home=a.seed<b.seed?a:b;
+ return {
+   id:`${field.conference}-${roundKey}-${a.seed}-${b.seed}`,
+   roundKey,a,b,homeSeed:home.seed,played:false,winner:null,scoreA:null,scoreB:null
+ };
+}
+
+function setupWildCard(field){
+ if(field.rounds.wildCard.length)return;
+ [[2,7],[3,6],[4,5]].forEach(([a,b])=>{
+   field.rounds.wildCard.push(makeBracketMatch(field,"wildCard",teamBySeed(field,a),teamBySeed(field,b)));
+ });
+}
+
+function simulateCpuMatch(match,neutral=false){
+ if(match.played||match.a.user||match.b.user)return;
+ const home=match.a.seed<match.b.seed?match.a:match.b;
+ const away=home===match.a?match.b:match.a;
+ const r=gameScore(home.rating+(neutral?0:1.5),away.rating,{era:home.era||away.era||"2020s"});
+ const homeScore=r.us,awayScore=r.them;
+ match.played=true;
+ match.winner=r.win?home:away;
+ if(home===match.a){match.scoreA=homeScore;match.scoreB=awayScore}
+ else{match.scoreA=awayScore;match.scoreB=homeScore}
+}
+
+function setupDivisional(field){
+ if(field.rounds.divisional.length)return;
+ if(!field.rounds.wildCard.length||field.rounds.wildCard.some(m=>!m.played))return;
+ const survivors=[teamBySeed(field,1),...field.rounds.wildCard.map(m=>m.winner)].filter(Boolean).sort((a,b)=>a.seed-b.seed);
+ // NFL reseeding: highest remaining seed hosts the lowest remaining seed.
+ field.rounds.divisional.push(makeBracketMatch(field,"divisional",survivors[0],survivors[3]));
+ field.rounds.divisional.push(makeBracketMatch(field,"divisional",survivors[1],survivors[2]));
+}
+
+function setupChampionship(field){
+ if(field.rounds.championship.length)return;
+ if(!field.rounds.divisional.length||field.rounds.divisional.some(m=>!m.played))return;
+ const survivors=field.rounds.divisional.map(m=>m.winner).filter(Boolean).sort((a,b)=>a.seed-b.seed);
+ if(survivors.length===2){
+   field.rounds.championship.push(makeBracketMatch(field,"championship",survivors[0],survivors[1]));
+ }
+}
+
+function refreshConferenceChampion(field){
+ const m=field.rounds.championship[0];
+ if(m&&m.played)field.champion=m.winner;
+}
+
+function simulateConferenceToChampion(field){
+ setupWildCard(field);
+ field.rounds.wildCard.forEach(m=>simulateCpuMatch(m));
+ setupDivisional(field);
+ field.rounds.divisional.forEach(m=>simulateCpuMatch(m));
+ setupChampionship(field);
+ field.rounds.championship.forEach(m=>simulateCpuMatch(m));
+ refreshConferenceChampion(field);
+}
+
+function initializePlayoffBracket(){
+ const myConf=S.season.conference;
+ const other=oppositeConference(myConf);
+ S.season.bracket={};
+ S.season.bracket[myConf]=buildConferenceField(myConf,S.season.seed);
+ S.season.bracket[other]=buildConferenceField(other,null);
+
+ const mine=S.season.bracket[myConf];
+ setupWildCard(mine);
+ // All Wild Card games not involving the player are resolved so the next
+ // round can be re-seeded from actual survivors.
+ mine.rounds.wildCard.forEach(m=>simulateCpuMatch(m));
+
+ // The opposite conference runs as its own complete seven-seed bracket.
+ // Its champion is fixed by real bracket survival, not a fresh Super Bowl draw.
+ simulateConferenceToChampion(S.season.bracket[other]);
+}
+
+function roundLabel(roundKey){
+ return roundKey==="wildCard"?"Wild Card":roundKey==="divisional"?"Divisional Round":"Conference Championship";
+}
+
+function addUserGameFromMatch(match,roundKey){
+ if(!match||match.played)return;
+ const me=match.a.user?match.a:match.b.user?match.b:null;
+ if(!me)return;
+ const opp=match.a.user?match.b:match.a;
+ const site=me.seed<opp.seed?"HOME":"AWAY";
+ S.season.playoffs.push({
+   round:roundLabel(roundKey),bracketRound:roundKey,matchId:match.id,
+   conference:S.season.conference,key:opp.key,franchise:opp.franchise,
+   opp:opp.opp,era:opp.era,rating:opp.rating,oppSeed:opp.seed,userSeed:me.seed,site,
+   played:false,win:null,us:null,them:null
+ });
+}
+
+function addSuperBowl(){
+ if(S.season.playoffs.some(g=>g.round==="Super Bowl"))return;
+ const other=oppositeConference(S.season.conference);
+ const champ=S.season.bracket?.[other]?.champion;
+ if(!champ)return;
+ S.season.playoffs.push({
+   round:"Super Bowl",bracketRound:"superBowl",matchId:"SUPER-BOWL",
+   conference:other,key:champ.key,franchise:champ.franchise,
+   opp:champ.opp,era:champ.era,rating:champ.rating,oppSeed:champ.seed,userSeed:S.season.seed,site:"NEUTRAL",
+   played:false,win:null,us:null,them:null
+ });
+}
+
+function prepareNextPlayoffGame(){
+ if(!S.season?.bracket)return;
+ if(S.season.playoffs.some(g=>!g.played))return;
+ const field=S.season.bracket[S.season.conference];
+
+ setupWildCard(field);
+ field.rounds.wildCard.forEach(m=>simulateCpuMatch(m));
+ const wc=field.rounds.wildCard.find(m=>!m.played&&(m.a.user||m.b.user));
+ if(wc){addUserGameFromMatch(wc,"wildCard");return}
+ if(field.rounds.wildCard.some(m=>!m.played))return;
+
+ setupDivisional(field);
+ field.rounds.divisional.forEach(m=>simulateCpuMatch(m));
+ const div=field.rounds.divisional.find(m=>!m.played&&(m.a.user||m.b.user));
+ if(div){addUserGameFromMatch(div,"divisional");return}
+ if(field.rounds.divisional.some(m=>!m.played))return;
+
+ setupChampionship(field);
+ field.rounds.championship.forEach(m=>simulateCpuMatch(m));
+ const cc=field.rounds.championship.find(m=>!m.played&&(m.a.user||m.b.user));
+ if(cc){addUserGameFromMatch(cc,"championship");return}
+ if(field.rounds.championship.some(m=>!m.played))return;
+
+ refreshConferenceChampion(field);
+ if(field.champion?.user)addSuperBowl();
+}
+
+function startPlayoffs(){
+ if(!S.season.seed){
+  S.season.finished=true;render();return
+ }
+ if(S.season.playoffs.length===0){
+  S.season.phase="playoffs";
+  initializePlayoffBracket();
+  prepareNextPlayoffGame();
+ }
+ render();
+}
+
+function findBracketMatch(g){
+ if(!g||g.round==="Super Bowl"||!S.season.bracket)return null;
+ const field=S.season.bracket[S.season.conference];
+ return (field.rounds[g.bracketRound]||[]).find(m=>m.id===g.matchId)||null;
+}
+
+function playPlayoff(){
+ if(!S.season||S.season.phase!=="playoffs")return;
+ const g=S.season.playoffs.find(x=>!x.played);
+ if(!g)return;
+
+ let usU=rosterUnits(),themU=opponentUnits(g.key);
+ if(g.site==="HOME")usU=boostUnits(usU,1.5);
+ if(g.site==="AWAY")themU=boostUnits(themU,1.5);
+ const r=gameScore(usU.overall,themU.overall,{usUnits:usU,themUnits:themU,era:g.era});
+ g.played=true;g.win=r.win;g.us=r.us;g.them=r.them;g.stats=buildGameStats(g.key,r,usU,themU,g.era);
+
+ if(g.round!=="Super Bowl"){
+   const match=findBracketMatch(g);
+   if(match){
+     const me=match.a.user?match.a:match.b;
+     const opp=match.a.user?match.b:match.a;
+     match.played=true;
+     match.winner=r.win?me:opp;
+     if(match.a.user){match.scoreA=r.us;match.scoreB=r.them}
+     else{match.scoreA=r.them;match.scoreB=r.us}
+   }
+ }
+
+ if(!r.win){
+  S.season.finished=true;S.season.champion=false;S.season.phase="done";
+  if(g.round==="Super Bowl"){
+   const opp=S.season.bracket?.[g.conference]?.champion;
+   S.season.leagueChampion=opp||{user:false,key:g.key,franchise:g.franchise,conference:g.conference,opp:g.opp,era:g.era,rating:g.rating,seed:g.oppSeed};
+   S.season.leagueSuperBowl={winner:S.season.leagueChampion,scoreA:g.us,scoreB:g.them};
+  }else simulateRemainingLeaguePostseason();
+ }else if(g.round==="Super Bowl"){
+  S.season.finished=true;S.season.champion=true;S.season.phase="done";
+  S.season.leagueChampion={user:true,conference:S.season.conference,opp:"YOUR TEAM",era:"Cross-Era Roster",rating:Math.round(rosterStrength()),seed:S.season.seed};
+ }else{
+  const field=S.season.bracket[S.season.conference];
+  if(g.bracketRound==="championship")refreshConferenceChampion(field);
+  prepareNextPlayoffGame();
+ }
+ if(S.season.phase==="done")archiveSeason();
+ render();
+}
+
+function seasonFinishLabel(){
+ if(S.season?.champion)return "Super Bowl Champion";
+ const last=(S.season?.playoffs||[]).filter(g=>g.played).slice(-1)[0];
+ if(last&&!last.win){if(last.round==="Super Bowl")return "Super Bowl Runner-Up";return `Lost ${last.round}`;}
+ if(!S.season?.seed)return "Missed Playoffs";
+ return "Season Complete";
+}
+function archiveSeason(){
+ if(!S.season||S.season.archived)return;
+ if(!S.season.finished&&!(!S.season.seed&&S.season.phase!=="regular"))return;
+ if(!S.season.awards?.finalized&&regularPlayedGames().length===17)finalizeSeasonAwards();
+ const players=buildUserAwardCandidates().map(c=>({name:c.name,pos:c.pos,role:c.role,impact:c.impact,stats:c.stats,summary:c.summary}));
+ const awards=(S.season.awards?.categories||[]).filter(cat=>cat.finalists.some(c=>c.id===cat.winner&&c.isUser)).map(cat=>{const w=cat.finalists.find(c=>c.id===cat.winner);return {title:cat.title,player:w?.name||""}});
+ const entry={seasonNo:((S.history||[]).slice(-1)[0]?.seasonNo||0)+1,createdAt:new Date().toISOString(),wins:S.season.wins,losses:S.season.losses,pf:S.season.pf,pa:S.season.pa,conference:S.season.conference,seed:S.season.seed,finish:seasonFinishLabel(),champion:!!S.season.champion,teamOVR:Math.round(rosterStrength()),leagueChampion:leagueChampionName(),awards,players};
+ S.history=[...(S.history||[]),entry].slice(-50);S.season.archived=true;save();
+}
+function recordBookFromHistory(){
+ const defs=[{label:"Passing Yards",role:"QB",key:"passYds"},{label:"Passing TD",role:"QB",key:"passTD"},{label:"Rushing Yards",roles:["QB","RB"],key:"rushYds"},{label:"Receiving Yards",roles:["WR","TE","RB"],key:"recYds"},{label:"Sacks",roles:["EDGE","DT","LB","DB"],key:"sacks"},{label:"Takeaways",roles:["EDGE","DT","LB","DB"],key:"takeaways"}];
+ return defs.map(d=>{let best=null;(S.history||[]).forEach(h=>(h.players||[]).forEach(p=>{if(d.role&&p.role!==d.role)return;if(d.roles&&!d.roles.includes(p.role))return;const v=p.stats?.[d.key];if(!Number.isFinite(v))return;if(!best||v>best.value)best={label:d.label,value:v,name:p.name,seasonNo:h.seasonNo};}));return best;}).filter(Boolean);
+}
+function renderFranchiseHistory(){
+ const card=$("historyCard"),area=$("historyArea"),count=$("historyCount");if(!card||!area)return;
+ const h=S.history||[];card.classList.toggle("show",h.length>0);if(!h.length)return;
+ count.textContent=`${h.length} Season${h.length===1?"":"s"}`;
+ const champs=h.filter(x=>x.champion).length,playoffs=h.filter(x=>x.seed).length,totalW=h.reduce((a,x)=>a+x.wins,0),totalL=h.reduce((a,x)=>a+x.losses,0),awards=h.reduce((a,x)=>a+(x.awards?.length||0),0),rb=recordBookFromHistory();
+ const seasons=[...h].reverse().map(x=>`<div class="historyseason ${x.champion?"champion":""}"><div class="historytop"><div class="historyfinish">Season ${x.seasonNo} • ${x.finish}</div><b>${x.wins}-${x.losses}</b></div><div class="historymeta">${x.conference}${x.seed?` • Seed #${x.seed}`:""} • Team OVR ${x.teamOVR} • PF ${x.pf} / PA ${x.pa}${x.leagueChampion?` • League Champ: ${x.leagueChampion}`:""}</div>${x.awards?.length?`<div class="historyawards">🏆 ${x.awards.map(a=>`${a.player} — ${a.title}`).join(" • ")}</div>`:""}</div>`).join("");
+ area.innerHTML=`<div class="historysummary"><div class="historystat"><b>${champs}</b><span>CHAMPIONSHIPS</span></div><div class="historystat"><b>${playoffs}</b><span>PLAYOFF BERTHS</span></div><div class="historystat"><b>${totalW}-${totalL}</b><span>ALL-TIME RECORD</span></div><div class="historystat"><b>${awards}</b><span>AWARDS WON</span></div></div><details open><summary>📚 Franchise Record Book</summary><div class="inside"><div class="recordbook">${rb.map(r=>`<div class="recorditem"><b>${r.value} • ${r.name}</b><span>${r.label} • Season ${r.seasonNo}</span></div>`).join("")||'<div class="tiny">Complete a season to establish records.</div>'}</div></div></details><details><summary>🗓️ Season Archive</summary><div class="inside">${seasons}</div></details>`;
+}
+
+function seasonRender(){
+ const complete=Object.keys(S.ro).length===25;
+ $("seasonCard").classList.toggle("show",complete);
+ if(!complete)return;
+ $("strengthPill").textContent="Team "+Math.round(rosterStrength());
+ const cb=$("conferenceBadge"),cn=$("conferenceNote");
+ if(S.season && S.season.conference){
+   cb.style.display="inline-block";
+   cb.textContent="YOUR SIDE: "+S.season.conference;
+   cb.className="confbadge "+S.season.conference.toLowerCase();
+   cn.style.display="block";
+   cn.textContent="NFL-style reseeding • No repeat playoff franchises";
+ }else{
+   cb.style.display="none";
+   cn.style.display="none";
+ }
+
+ if(!S.season){
+  $("phase").textContent="NEXT STEP";
+  $("record").textContent="Roster Complete";
+  $("direction").textContent="Your roster is finished. Build a 17-game schedule, then play each week and watch your record update.";
+  $("seasonSetup").style.display="block";$("seasonPlay").style.display="none";$("postseason").style.display="none";
+  return;
+ }
+
+ $("seasonSetup").style.display="none";
+ $("seasonPlay").style.display="block";
+ $("wins").textContent=S.season.wins;$("losses").textContent=S.season.losses;
+ $("pfpa").textContent=S.season.pf+" / "+S.season.pa;
+ $("record").textContent=S.season.wins+"-"+S.season.losses;
+
+ const pendingIndex=S.season.schedule.findIndex(x=>!x.played);
+ ensureLeagueSeason();
+ $("schedule").innerHTML=S.season.schedule.map((g,i)=>`<div class="game ${i===pendingIndex?"current":""}">
+   <div class="week">WK ${g.week}</div>
+   <div><div class="opp">${g.opp}</div><div class="oppmeta">${g.era} • Opponent Rating ${g.rating}</div></div>
+   <div class="result ${!g.played?"pending":g.win?"win":"loss"}">${!g.played?"—":(g.win?"W ":"L ")+g.us+"-"+g.them}</div>
+   ${boxScoreHTML(g,g.played&&g.week===S.season.week&&S.season.phase==="regular")}
+  </div>`).join("");
+ renderLeagueStandings();renderLeagueLeaders();renderAwards();
+
+ if(S.season.phase==="regular"){
+  $("phase").textContent="REGULAR SEASON";
+  const next=S.season.schedule.find(x=>!x.played);
+  $("direction").textContent=next?`Next: Week ${next.week} vs. ${next.era} ${next.opp}. Play one game at a time or finish the rest of the regular season.`:"Regular season complete.";
+  $("seasonActions").style.display="grid";$("postseason").style.display="none";
+ }else{
+  $("seasonActions").style.display="none";
+  $("postseason").style.display="block";
+  $("phase").textContent=S.season.phase==="postseason"?"REGULAR SEASON COMPLETE":S.season.phase==="playoffs"?"PLAYOFFS":"SEASON COMPLETE";
+  renderPostseason();
+ }
+}
+
+function bracketTeamRow(team,match){
+ if(!team)return "";
+ const score=match.played?(team===match.a?match.scoreA:match.scoreB):"";
+ const won=match.played&&match.winner&&match.winner.seed===team.seed;
+ return `<div class="bracketteam ${team.user?"you":""} ${won?"advance":""}">
+   <span><b>#${team.seed}</b> ${participantName(team)}</span><b>${score}</b>
+  </div>`;
+}
+
+function bracketRoundHTML(title,matches,byeTeam=null){
+ let body=matches.map(m=>`<div class="bracketmatch">${bracketTeamRow(m.a,m)}${bracketTeamRow(m.b,m)}</div>`).join("");
+ if(byeTeam)body=`<div class="bracketbye"><b>#1 ${participantName(byeTeam)}</b> • First-round bye</div>`+body;
+ return `<div class="bracketround"><div class="bracketroundtitle">${title}</div>${body||'<div class="tiny">TBD</div>'}</div>`;
+}
+
+function conferenceBracketHTML(field){
+ if(!field)return "";
+ const bye=teamBySeed(field,1);
+ return `<div class="bracketbox">
+   <div class="brackettitle">${field.conference} PLAYOFF BRACKET</div>
+   ${bracketRoundHTML("WILD CARD",field.rounds.wildCard,bye)}
+   ${bracketRoundHTML("DIVISIONAL",field.rounds.divisional)}
+   ${bracketRoundHTML("CONFERENCE CHAMPIONSHIP",field.rounds.championship)}
+  </div>`;
+}
+
+function renderPostseason(){
+ const w=S.season.wins,l=S.season.losses;
+ if(S.season.phase==="postseason"){
+  if(S.season.seed){
+   const bye=S.season.seed===1?" You earned the conference's only first-round bye.":"";
+   $("direction").textContent=`Regular season finished ${w}-${l}. You earned the #${S.season.seed} seed on the ${S.season.conference} side.${bye}`;
+   $("postSummary").innerHTML=`<div class="tiny">Final record: <b>${w}-${l}</b> • Seed #${S.season.seed} • PF ${S.season.pf} • PA ${S.season.pa}</div>`;
+   $("startPlayoffs").style.display="block";$("startPlayoffs").textContent="Build Playoff Bracket";$("playoffArea").innerHTML="";
+  }else{
+   $("direction").textContent=`Regular season finished ${w}-${l}. You finished outside the top seven in the ${S.season.conference}, so this run is over.`;
+   $("postSummary").innerHTML=`<div class="lose">Missed the Playoffs</div><div class="tiny">Final record ${w}-${l} • PF ${S.season.pf} • PA ${S.season.pa}</div>${S.season.leagueChampion?`<div class="tiny" style="margin-top:4px">🏆 League Champion: <b>${leagueChampionName()}</b></div>`:""}`;
+   $("startPlayoffs").style.display="none";$("playoffArea").innerHTML="";
+  }
+  return;
+ }
+
+ // Upgrade old saved postseason runs into the new seeded bracket without
+ // forcing the player to rebuild the roster or replay the regular season.
+ if(S.season.phase==="playoffs"&&!S.season.bracket){
+   S.season.playoffs=[];
+   initializePlayoffBracket();
+   prepareNextPlayoffGame();
+ }
+
+ $("startPlayoffs").style.display="none";
+ const field=S.season.bracket?.[S.season.conference];
+ const bracket=conferenceBracketHTML(field);
+ let games=S.season.playoffs.map(g=>`<div class="playoffgame">
+   <div class="phase">${g.round}</div>
+   <div class="opp">#${g.userSeed} YOUR TEAM vs. #${g.oppSeed} ${g.era} ${g.opp}</div>
+   <div class="tiny">${g.round==="Super Bowl"?`${S.season.conference} Champion vs. ${g.conference} Champion • Neutral site`:`${g.conference} • ${g.site} • Rating ${g.rating}`}</div>
+   <div class="${!g.played?"pending":g.win?"win":"loss"}" style="font-weight:900;margin-top:3px">${!g.played?"UP NEXT":(g.win?"WIN ":"LOSS ")+g.us+"-"+g.them}</div>
+   ${boxScoreHTML(g,g.played&&g===S.season.playoffs.filter(x=>x.played).slice(-1)[0])}
+  </div>`).join("");
+
+ if(S.season.phase==="playoffs"){
+  const next=S.season.playoffs.find(x=>!x.played);
+  $("direction").textContent=next
+   ? (next.round==="Super Bowl"
+      ? `SUPER BOWL: ${S.season.conference} Champion vs. ${next.conference} Champion — #${next.oppSeed} ${next.era} ${next.opp}. Neutral field.`
+      : `Next: ${next.round}. #${next.userSeed} YOUR TEAM is ${next.site} against #${next.oppSeed} ${next.era} ${next.opp}. The bracket re-seeds after each round.`)
+   : "";
+  $("playoffArea").innerHTML=bracket+`<div class="pathlabel">YOUR PLAYOFF PATH</div>`+games+`<button class="pri" id="playPO" style="width:100%;margin-top:6px">Play ${next?next.round:"Next Game"}</button>`;
+  const b=$("playPO");if(b)b.onclick=playPlayoff;
+ }else{
+  $("playoffArea").innerHTML=bracket+`<div class="pathlabel">YOUR PLAYOFF PATH</div>`+games+(S.season.champion
+   ? `<div class="champ" style="margin-top:8px">🏆 SUPER BOWL CHAMPIONS!</div><div class="tiny">You survived a full seeded NFL-style bracket.</div>`
+   : `<div class="lose" style="margin-top:8px">Season Over</div><div class="tiny">Your playoff run ended in the bracket above.</div>${S.season.leagueChampion?`<div class="tiny" style="margin-top:4px">🏆 League Champion: <b>${leagueChampionName()}</b></div>`:""}`);
+  $("direction").textContent=S.season.champion?"Your cross-era roster won the Super Bowl through a seeded, re-seeded playoff bracket.":`Your playoff run ended. The league simulation continued and ${leagueChampionName()} finished as champion.`;
+ }
+}
+
+function render(){
+ let z=Object.keys(S.ro).length;
+ $("ct").textContent=z+" / 25 filled";$("b").style.width=(z/25*100)+"%";
+ $("u").disabled=S.rolling||!S.hi.length;$("r").disabled=S.rolling||!S.on||z===25;
+ $("s").disabled=S.rolling||z===25;
+
+ if(!S.on){
+  $("e").textContent="READY";$("t").textContent="Press Start";$("m").textContent="Start";$("m").disabled=S.rolling;$("sel").textContent="No player selected.";
+ }else if(z<25){
+  if(!S.rolling){$("e").textContent=pool().era;$("t").textContent=pool().team}
+  $("m").textContent="Lock Pick";
+  let p=cur();$("m").disabled=S.rolling||!p||!S.sl||!ok(S.sl,p.pos);
+  $("sel").textContent=p?p.name+" • "+p.pos+" • Impact "+p.impact:"Tap a starter below.";
+ }else{
+  $("e").textContent="ROSTER COMPLETE";$("t").textContent="Season Mode Unlocked";$("m").textContent="Roster Complete";$("m").disabled=true;
+  $("sel").textContent="Scroll to Season Mode below →";
+ }
+ slots();players();hist();seasonRender();renderFranchiseHistory();save()
+}
+
+async function main(){
+ if(S.rolling)return;
+ if(!S.on){
+  S.on=true;S.sl=os()[0];
+  await rollEffect(pickKey());
+  return
+ }
+ let p=cur();if(!p||!ok(S.sl,p.pos))return;
+ let d=pool(),fit=slotImpact(S.sl,p),x={name:p.name,pos:p.pos,impact:fit,baseImpact:p.impact,slot:S.sl,team:d.team,era:d.era,draw:S.d};
+ S.ro[S.sl]=x;S.hi.push(x);S.p=null;
+ if(Object.keys(S.ro).length<25){
+  S.sl=os()[0];
+  await rollEffect(pickKey());
+ }else{
+  render();
+  setTimeout(()=>$("seasonCard").scrollIntoView({behavior:"smooth",block:"start"}),150);
+ }
+}
+
+function undo(){
+ if(S.rolling)return;
+ let x=S.hi.pop();if(!x)return;
+ delete S.ro[x.slot];S.d=x.draw;S.sl=x.slot;S.p=null;S.season=null;render()
+}
+function reset(){
+ if(!confirm("Start a completely new roster and season? Your completed Franchise History will be kept."))return;
+ const history=Array.isArray(S.history)?S.history:[];
+ S={on:false,d:null,ro:{},hi:[],sl:null,p:null,rolling:false,season:null,history};render()
+}
+async function reroll(){
+ if(S.rolling||!S.on||Object.keys(S.ro).length===25)return;
+ await rollEffect(pickKey())
+}
+
+$("m").onclick=main;$("u").onclick=undo;$("n").onclick=reset;$("r").onclick=reroll;
+$("s").onchange=e=>{S.sl=e.target.value;render()};
+$("buildSeason").onclick=buildSchedule;$("nextGame").onclick=playNext;$("fullSeason").onclick=playRest;$("startPlayoffs").onclick=startPlayoffs;
+render();
+</script>
+
+<script>
+document.addEventListener('click', async e => {
+  if (e.target && e.target.id === 'shareApp') {
+    const shareData = {
+      title: 'Super Bowl Randomizer',
+      text: 'Try my NFL Super Bowl Randomizer — build a cross-era roster and see if you can win the Super Bowl!',
+      url: location.href
+    };
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(location.href);
+        alert('Link copied!');
+      } else {
+        prompt('Copy this link:', location.href);
+      }
+    } catch (err) {}
+  }
+});
+</script>
+
+</body>
+</html>
